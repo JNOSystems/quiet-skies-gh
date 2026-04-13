@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiet Skies Granada Hills</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --sky: #0a0e1a;
+    --midnight: #060a14;
+    --navy: #0d1b3e;
+    --blue: #1a3a6e;
+    --amber: #f59e0b;
+    --amber-hot: #f97316;
+    --amber-glow: rgba(245,158,11,0.15);
+    --text: #e8edf5;
+    --muted: #7a8ba8;
+    --white: #ffffff;
+    --zone-bg: rgba(255,255,255,0.06);
+    --zone-border: rgba(255,255,255,0.12);
+    --zone-active: rgba(245,158,11,0.2);
+    --zone-active-border: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--midnight);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* STARS */
+  .stars {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: var(--opacity, 0.6);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--opacity, 0.6); }
+    50% { opacity: 0.1; }
+  }
+
+  /* AIRCRAFT SILHOUETTE */
+  .aircraft-silhouette {
+    position: fixed;
+    top: 12%;
+    right: -120px;
+    width: 100px;
+    opacity: 0.06;
+    animation: fly 25s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+  @keyframes fly {
+    0% { right: -120px; top: 12%; }
+    100% { right: 110%; top: 8%; }
+  }
+
+  /* MAIN LAYOUT */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 32px 0 24px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 28px;
+  }
+  .logo-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.9;
+  }
+  .site-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    color: var(--white);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 span {
+    color: var(--amber);
+    display: block;
+  }
+  .tagline {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* LIVE COUNTER */
+  .live-counter {
+    background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(249,115,22,0.08));
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .counter-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .live-dot {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .counter-label {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .counter-label strong {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .counter-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--amber);
+    line-height: 1;
+  }
+  .counter-sub {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ZONE SELECTOR */
+  .zone-section {
+    margin-bottom: 24px;
+  }
+  .zone-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .zone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .zone-btn {
+    background: var(--zone-bg);
+    border: 1px solid var(--zone-border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.3;
+  }
+  .zone-btn:hover {
+    border-color: rgba(245,158,11,0.4);
+    background: rgba(245,158,11,0.08);
+  }
+  .zone-btn.active {
+    background: var(--zone-active);
+    border-color: var(--zone-active-border);
+    color: var(--amber);
+    font-weight: 600;
+  }
+  .zone-icon {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  /* MAIN BUTTON */
+  .report-section {
+    margin-bottom: 28px;
+  }
+  .report-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border: none;
+    border-radius: 20px;
+    padding: 32px 24px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.15s ease;
+    box-shadow: 0 8px 40px rgba(245,158,11,0.35), 0 2px 8px rgba(0,0,0,0.4);
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  .report-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .report-btn:hover::before { opacity: 1; }
+  .report-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 20px rgba(245,158,11,0.25);
+  }
+  .report-btn.fired {
+    animation: btn-fire 0.4s ease;
+  }
+  @keyframes btn-fire {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.95); }
+    60% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  .btn-plane {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  }
+  .btn-main-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    display: block;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .btn-sub-text {
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+    display: block;
+  }
+
+  /* CONFIRMATION TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1a3a1a;
+    border: 1px solid #22c55e;
+    border-radius: 14px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #86efac;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast .toast-sub {
+    display: block;
+    font-size: 12px;
+    color: #4ade80;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* RECENT LOG */
+  .log-section {
+    margin-bottom: 28px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .section-badge {
+    font-size: 11px;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .log-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fade-in 0.4s ease;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .log-zone {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .log-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.05em;
+  }
+  .log-new {
+    width: 6px;
+    height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* LAWA LINK */
+  .lawa-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+  }
+  .lawa-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .lawa-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .lawa-btn {
+    display: block;
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lawa-btn:hover {
+    background: rgba(255,255,255,0.11);
+    border-color: rgba(255,255,255,0.25);
+  }
+  .lawa-btn-primary {
+    background: rgba(245,158,11,0.15);
+    border-color: rgba(245,158,11,0.35);
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .lawa-btn-primary:hover {
+    background: rgba(245,158,11,0.22);
+  }
+
+  /* INFO STRIP */
+  .info-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .info-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .info-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--amber);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .info-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-link {
+    font-size: 12px;
+    color: var(--amber);
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  .privacy-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: rgba(122,139,168,0.6);
+    line-height: 1.5;
+  }
+
+  /* NO ZONE WARNING */
+  .no-zone-warn {
+    display: none;
+    font-size: 13px;
+    color: #f87171;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 500;
+  }
+  .no-zone-warn.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- STARS -->
+<div class="stars" id="stars"></div>
+
+<!-- AIRCRAFT SILHOUETTE -->
+<svg class="aircraft-silhouette" viewBox="0 0 100 40" fill="white" xmlns="http://www.w3.org/2000/svg">
+  <path d="M95 18 L60 15 L45 0 L38 0 L48 15 L20 13 L14 6 L8 6 L12 14 L5 14 L5 18 L5 22 L12 22 L8 30 L14 30 L20 23 L48 21 L38 36 L45 36 L60 21 L95 18Z"/>
+</svg>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  ✓ Report logged
+  <span class="toast-sub" id="toast-sub">Filing complaint to LAWA...</span>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-line">
+      <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="15" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+        <path d="M28 14 L18 13 L14 4 L11 4 L14 13 L6 12 L4 8 L2 8 L3 14 L3 16 L2 22 L4 22 L6 18 L14 17 L11 26 L14 26 L18 17 L28 16 L28 14Z" fill="#f59e0b"/>
+      </svg>
+      <span class="site-name">Quiet Skies Granada Hills</span>
+    </div>
+    <h1>OVER<span>OUR HEADS.</span></h1>
+    <p class="tagline">Private jets over Granada Hills — all day, all night.<br>Your report goes on the record. Every tap counts.</p>
+  </header>
+
+  <!-- LIVE COUNTER -->
+  <div class="live-counter">
+    <div class="counter-left">
+      <div class="live-dot"></div>
+      <div class="counter-label">
+        <strong>Reports Today</strong>
+        Granada Hills residents
+      </div>
+    </div>
+    <div>
+      <div class="counter-number" id="counter">0</div>
+      <span class="counter-sub">in last 24 hrs</span>
+    </div>
+  </div>
+
+  <!-- INFO STRIP -->
+  <div class="info-strip">
+    <div class="info-card">
+      <div class="info-number">230K+</div>
+      <div class="info-desc">VNY operations per year</div>
+    </div>
+    <div class="info-card">
+      <div class="info-number" id="tonight-count">0</div>
+      <div class="info-desc">reports tonight so far</div>
+    </div>
+  </div>
+
+  <!-- ZONE SELECTOR -->
+  <div class="zone-section">
+    <span class="zone-label">Where are you in Granada Hills?</span>
+    <div class="zone-grid">
+      <button class="zone-btn" data-zone="Granada Hills North" onclick="selectZone(this)">
+        <span class="zone-icon">🏔️</span>North
+      </button>
+      <button class="zone-btn" data-zone="Granada Hills Central" onclick="selectZone(this)">
+        <span class="zone-icon">🏘️</span>Central
+      </button>
+      <button class="zone-btn" data-zone="Granada Hills South" onclick="selectZone(this)">
+        <span class="zone-icon">🌆</span>South
+      </button>
+    </div>
+    <div class="no-zone-warn" id="zone-warn">Please select your neighborhood area first</div>
+  </div>
+
+  <!-- MAIN REPORT BUTTON -->
+  <div class="report-section">
+    <button class="report-btn" id="reportBtn" onclick="reportPlane()">
+      <span class="btn-plane">✈️</span>
+      <span class="btn-main-text">I HEARD A PLANE</span>
+      <span class="btn-sub-text">Tap to log a community report</span>
+    </button>
+  </div>
+
+  <!-- RECENT LOG -->
+  <div class="log-section">
+    <div class="section-header">
+      <span class="section-title">Recent Reports</span>
+      <span class="section-badge" id="log-badge">Live</span>
+    </div>
+    <div class="log-list" id="logList">
+      <div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">
+        No reports yet tonight.<br>Be the first to log a flight.
+      </div>
+    </div>
+  </div>
+
+  <!-- LAWA COMPLAINT SECTION -->
+  <div class="lawa-section">
+    <div class="lawa-title">File Direct with LAWA</div>
+    <p class="lawa-desc">A consistent complaint record helps document community impact. Takes about 60 seconds.</p>
+    <a class="lawa-btn lawa-btn-primary" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
+      📋 File Official VNY Noise Complaint
+    </a>
+    <a class="lawa-btn" href="https://airnoise.io" target="_blank" rel="noopener">
+      📱 Download AirNoise App (One-Tap Filing)
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p class="footer-text">
+      A community initiative for Granada Hills residents impacted by<br>Van Nuys Airport (VNY) flight paths.
+    </p>
+    <p style="font-size:12px; color: rgba(245,158,11,0.6); margin-bottom: 10px; font-weight: 500;">
+      Monitoring infrastructure and data documentation provided by<br>
+      <a href="https://jnosystems.com" target="_blank" rel="noopener" style="color: var(--amber); text-decoration: none; font-weight: 600;">JNO Systems LLC</a>
+      &nbsp;·&nbsp; AI Auditing &amp; Field Research
+    </p>
+    <div class="footer-links">
+      <a class="footer-link" href="https://www.quietskiesnow.org" target="_blank">Quiet Skies Network</a>
+      <a class="footer-link" href="https://webtrak.bksv.com" target="_blank">WebTrak Live Flights</a>
+      <a class="footer-link" href="https://ghnnc.org" target="_blank">GHNNC</a>
+    </div>
+    <p class="privacy-note">
+      Reports save timestamp and selected neighborhood zone only.<br>
+      No name, email, address, or login is requested.
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  // Generate stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    star.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      top: ${Math.random() * 100}%;
+      left: ${Math.random() * 100}%;
+      --d: ${2 + Math.random() * 4}s;
+      --delay: ${Math.random() * 4}s;
+      --opacity: ${0.2 + Math.random() * 0.7};
+    `;
+    starsEl.appendChild(star);
+  }
+
+  // Supabase
+  const SUPABASE_URL = 'https://whqevjejldbxgtlyagpw.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndocWV2amVqbGRieGd0bHlhZ3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMTM4NDAsImV4cCI6MjA5MTY4OTg0MH0.gSY-n_7rTBRDa_ZrXKLMqvvQFZpOSJmUIzKAK1VTx-0';
+  const reportsTable = 'reports';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // State
+  let selectedZone = null;
+  let reportCount = 0;
+  let tonightCount = 0;
+  let reports = [];
+  let isSubmitting = false;
+
+  function setBadge(text) {
+    document.getElementById('log-badge').textContent = text;
+  }
+
+  function getTodayStartIso() {
+    const todayStart = new Date();
+    todayStart.setHours(0,0,0,0);
+    return todayStart.toISOString();
+  }
+
+  function getOneDayAgoIso() {
+    return new Date(Date.now() - 86400000).toISOString();
+  }
+
+  async function getReportCount(sinceIso) {
+    const { count, error } = await supabaseClient
+      .from(reportsTable)
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', sinceIso);
+
+    if (error) throw error;
+    return count || 0;
+  }
+
+  async function loadData() {
+    setBadge('Loading');
+    try {
+      const [{ data: recentReports, error: recentError }, reportsLastDay, reportsToday] = await Promise.all([
+        supabaseClient
+          .from(reportsTable)
+          .select('id, created_at, zone, reported_at')
+          .order('created_at', { ascending: false })
+          .limit(8),
+        getReportCount(getOneDayAgoIso()),
+        getReportCount(getTodayStartIso())
+      ]);
+
+      if (recentError) throw recentError;
+
+      reports = recentReports || [];
+      reportCount = reportsLastDay;
+      tonightCount = reportsToday;
+      updateUI();
+      setBadge('Live');
+    } catch(e) {
+      console.error('Could not load Supabase reports:', e);
+      setBadge('Offline');
+      document.getElementById('logList').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">Unable to load shared reports right now.<br>Please try again shortly.</div>';
+    }
+  }
+
+  function updateUI() {
+    document.getElementById('counter').textContent = reportCount;
+    document.getElementById('tonight-count').textContent = tonightCount;
+    renderLog();
+  }
+
+  function renderLog() {
+    const list = document.getElementById('logList');
+    const recent = reports.slice(0, 8);
+    if (recent.length === 0) {
+      list.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">No reports yet tonight.<br>Be the first to log a flight.</div>';
+      return;
+    }
+    list.innerHTML = recent.map((r, i) => `
+      <div class="log-item">
+        <div class="log-zone">✈️ ${escapeHtml(r.zone)}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="log-time">${formatTime(r.created_at)}</span>
+          ${i === 0 ? '<div class="log-new"></div>' : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
+  function formatTime(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  }
+
+  function selectZone(btn) {
+    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedZone = btn.dataset.zone;
+    document.getElementById('zone-warn').classList.remove('show');
+  }
+
+  async function reportPlane() {
+    if (!selectedZone) {
+      document.getElementById('zone-warn').classList.add('show');
+      document.querySelectorAll('.zone-btn').forEach(b => {
+        b.style.animation = 'none';
+        setTimeout(() => b.style.animation = '', 10);
+      });
+      return;
+    }
+
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const btn = document.getElementById('reportBtn');
+    btn.classList.add('fired');
+    setTimeout(() => btn.classList.remove('fired'), 400);
+
+    const reportTime = new Date();
+
+    try {
+      const { error } = await supabaseClient
+        .from(reportsTable)
+        .insert({
+          zone: selectedZone,
+          reported_at: formatTime(reportTime)
+        });
+
+      if (error) throw error;
+
+      await loadData();
+
+      // Show toast
+      const toast = document.getElementById('toast');
+      const toastSub = document.getElementById('toast-sub');
+      toastSub.textContent = `${selectedZone} · ${formatTime(reportTime)}`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+
+      // Open LAWA complaint form after short delay
+      setTimeout(() => {
+        if (confirm('Open the official LAWA complaint form to file this report?\n\nTakes about 60 seconds. Every complaint counts.')) {
+          window.open('https://viewpoint.emsbk.com/vny1', '_blank');
+        }
+      }, 1200);
+    } catch(e) {
+      console.error('Could not save report:', e);
+      alert('Sorry, the shared report could not be saved. Please check your connection and try again.');
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+  // Init
+  loadData();
+
+  supabaseClient
+    .channel('reports-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: reportsTable }, () => {
+      loadData();
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') setBadge('Live');
+    });
+</script>
+</body>
+</html>
