@@ -3,17 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#03050a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Quiet Skies">
 <title>Quiet Skies Granada Hills</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --sky: #0a0e1a;
-    --midnight: #060a14;
-    --navy: #0d1b3e;
-    --blue: #1a3a6e;
-    --amber: #f59e0b;
-    --amber-hot: #f97316;
+    --sky: #050812;
+    --midnight: #03050a;
+    --navy: #101725;
+    --blue: #172238;
+    --amber: #f6a21a;
+    --amber-hot: #fb7b22;
     --amber-glow: rgba(245,158,11,0.15);
     --text: #e8edf5;
     --muted: #7a8ba8;
@@ -59,16 +65,16 @@
   .aircraft-silhouette {
     position: fixed;
     top: 12%;
-    right: -120px;
+    left: -120px;
     width: 100px;
-    opacity: 0.06;
-    animation: fly 25s linear infinite;
+    opacity: 0.045;
+    animation: fly 32s linear infinite;
     z-index: 0;
     pointer-events: none;
   }
   @keyframes fly {
-    0% { right: -120px; top: 12%; }
-    100% { right: 110%; top: 8%; }
+    0% { left: -120px; top: 13%; transform: rotate(-2deg); }
+    100% { left: calc(100% + 120px); top: 8%; transform: rotate(-2deg); }
   }
 
   /* MAIN LAYOUT */
@@ -82,10 +88,10 @@
 
   /* HEADER */
   header {
-    padding: 32px 0 24px;
+    padding: 24px 0 18px;
     text-align: center;
     border-bottom: 1px solid rgba(255,255,255,0.06);
-    margin-bottom: 28px;
+    margin-bottom: 18px;
   }
   .logo-line {
     display: flex;
@@ -115,7 +121,7 @@
     letter-spacing: -0.01em;
     color: var(--white);
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   h1 span {
     color: var(--amber);
@@ -127,14 +133,37 @@
     color: var(--muted);
     line-height: 1.5;
   }
+  .trust-note {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .top-lawa-link {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--amber);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+  .top-lawa-link:hover {
+    color: var(--amber-hot);
+  }
 
   /* LIVE COUNTER */
   .live-counter {
     background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(249,115,22,0.08));
     border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -184,7 +213,7 @@
 
   /* ZONE SELECTOR */
   .zone-section {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
   .zone-label {
     font-size: 12px;
@@ -198,13 +227,13 @@
   .zone-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    gap: 10px;
   }
   .zone-btn {
     background: var(--zone-bg);
     border: 1px solid var(--zone-border);
     border-radius: 10px;
-    padding: 12px 8px;
+    padding: 13px 10px 11px;
     color: var(--text);
     font-family: 'Barlow', sans-serif;
     font-size: 13px;
@@ -213,33 +242,79 @@
     cursor: pointer;
     transition: all 0.2s ease;
     line-height: 1.3;
+    position: relative;
+    min-height: 74px;
   }
   .zone-btn:hover {
     border-color: rgba(245,158,11,0.4);
     background: rgba(245,158,11,0.08);
   }
   .zone-btn.active {
-    background: var(--zone-active);
+    background: linear-gradient(180deg, rgba(245,158,11,0.2), rgba(249,115,22,0.12));
     border-color: var(--zone-active-border);
     color: var(--amber);
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(245,158,11,0.28), 0 0 18px rgba(245,158,11,0.14);
+    transform: translateY(-1px);
+  }
+  .zone-btn.active::after {
+    content: 'Selected';
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffd18a;
+    background: rgba(245,158,11,0.16);
+    border: 1px solid rgba(245,158,11,0.36);
+    border-radius: 999px;
+    padding: 2px 6px;
   }
   .zone-icon {
-    display: block;
-    font-size: 20px;
-    margin-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 4px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
   }
 
   /* MAIN BUTTON */
   .report-section {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
+  }
+  .report-helper {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+    color: var(--text);
+  }
+  .report-helper strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+  .report-privacy {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+    color: var(--muted);
   }
   .report-btn {
     width: 100%;
     background: linear-gradient(135deg, #f59e0b, #f97316);
     border: none;
     border-radius: 20px;
-    padding: 32px 24px;
+    padding: 24px 20px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -261,6 +336,18 @@
     transform: scale(0.97);
     box-shadow: 0 4px 20px rgba(245,158,11,0.25);
   }
+  .report-btn.cooldown {
+    cursor: not-allowed;
+    opacity: 0.58;
+    filter: grayscale(0.15);
+    box-shadow: 0 4px 18px rgba(245,158,11,0.16), 0 2px 8px rgba(0,0,0,0.35);
+  }
+  .report-btn.cooldown:active {
+    transform: none;
+  }
+  .report-btn.cooldown::before {
+    display: none;
+  }
   .report-btn.fired {
     animation: btn-fire 0.4s ease;
   }
@@ -271,14 +358,14 @@
     100% { transform: scale(1); }
   }
   .btn-plane {
-    font-size: 52px;
+    font-size: 44px;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
   }
   .btn-main-text {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 36px;
+    font-size: 30px;
     font-weight: 900;
     color: white;
     letter-spacing: 0.02em;
@@ -289,7 +376,7 @@
     margin-bottom: 6px;
   }
   .btn-sub-text {
-    font-size: 14px;
+    font-size: 13px;
     color: rgba(255,255,255,0.8);
     font-weight: 500;
     display: block;
@@ -323,6 +410,87 @@
     color: #4ade80;
     font-weight: 400;
     margin-top: 2px;
+  }
+
+  /* LAWA FOLLOW-UP BANNER */
+  .lawa-banner {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: 520px;
+    margin: 0 auto;
+    background: #101728;
+    border: 1px solid rgba(245,158,11,0.38);
+    border-radius: 12px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.5), 0 0 32px rgba(245,158,11,0.12);
+    color: var(--text);
+    z-index: 120;
+    transform: translateY(calc(100% + 28px));
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+  }
+  .lawa-banner.show {
+    transform: translateY(0);
+  }
+  .lawa-banner-inner {
+    padding: 16px;
+  }
+  .lawa-banner-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .lawa-banner-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .lawa-banner-text {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-top: 3px;
+  }
+  .lawa-banner-dismiss {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .lawa-banner-link {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: white;
+    border-radius: 8px;
+    padding: 13px 16px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 15px;
+    box-shadow: 0 8px 24px rgba(245,158,11,0.26);
+  }
+  .lawa-banner-countdown {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+  }
+  .lawa-banner-countdown span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #f59e0b, #f97316);
   }
 
   /* RECENT LOG */
@@ -365,6 +533,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     animation: fade-in 0.4s ease;
   }
   @keyframes fade-in {
@@ -372,13 +541,16 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .log-zone {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
   }
   .log-time {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 13px;
+    color: var(--text);
     font-family: 'Barlow Condensed', sans-serif;
     letter-spacing: 0.05em;
   }
@@ -443,32 +615,36 @@
     background: rgba(245,158,11,0.22);
   }
 
-  /* INFO STRIP */
-  .info-strip {
+  /* STATS BAR */
+  .stats-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin-bottom: 24px;
   }
-  .info-card {
+  .stat-card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 8px;
+    padding: 12px 8px;
     text-align: center;
+    min-width: 0;
   }
-  .info-number {
+  .stat-number {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     color: var(--amber);
     line-height: 1;
     margin-bottom: 4px;
+    overflow-wrap: anywhere;
   }
-  .info-desc {
-    font-size: 12px;
+  .stat-desc {
+    font-size: 11px;
     color: var(--muted);
     line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   /* FOOTER */
@@ -512,6 +688,85 @@
     font-weight: 500;
   }
   .no-zone-warn.show { display: block; }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 0 16px 32px;
+    }
+    header {
+      padding: 20px 0 14px;
+      margin-bottom: 16px;
+    }
+    .logo-line {
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-size: 34px;
+      line-height: 0.96;
+      margin-bottom: 6px;
+    }
+    .tagline {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .trust-note {
+      display: none;
+    }
+    .top-lawa-link {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .live-counter {
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .counter-number {
+      font-size: 42px;
+    }
+    .stats-bar {
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+    .stat-card {
+      padding: 10px 6px;
+    }
+    .zone-section {
+      margin-bottom: 16px;
+    }
+    .zone-btn {
+      min-height: 68px;
+      padding: 12px 8px 10px;
+      font-size: 12px;
+    }
+    .zone-icon {
+      width: 22px;
+      height: 22px;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    .report-helper {
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .report-btn {
+      border-radius: 18px;
+      padding: 22px 18px;
+    }
+    .btn-plane {
+      font-size: 40px;
+      margin-bottom: 4px;
+    }
+    .btn-main-text {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    .btn-sub-text {
+      font-size: 12px;
+    }
+    .report-privacy {
+      font-size: 11px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -526,8 +781,25 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast">
-  ✓ Report logged
+  &#10003; Report logged
   <span class="toast-sub" id="toast-sub">Filing complaint to LAWA...</span>
+</div>
+
+<!-- LAWA FOLLOW-UP BANNER -->
+<div class="lawa-banner" id="lawa-banner" aria-live="polite">
+  <div class="lawa-banner-inner">
+    <div class="lawa-banner-top">
+      <div>
+        <div class="lawa-banner-title">Report logged. Help make it count:</div>
+        <div class="lawa-banner-text">Open the official VNY noise form and add this incident to LAWA's record.</div>
+      </div>
+      <button class="lawa-banner-dismiss" type="button" aria-label="Dismiss LAWA complaint prompt" onclick="dismissLawaBanner()">X</button>
+    </div>
+    <a class="lawa-banner-link" id="lawa-banner-link" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
+      File Official LAWA Complaint
+    </a>
+  </div>
+  <div class="lawa-banner-countdown" aria-hidden="true"><span id="lawa-banner-countdown"></span></div>
 </div>
 
 <div class="container">
@@ -542,16 +814,20 @@
       <span class="site-name">Quiet Skies Granada Hills</span>
     </div>
     <h1>OVER<span>OUR HEADS.</span></h1>
-    <p class="tagline">Private jets over Granada Hills — all day, all night.<br>Your report goes on the record. Every tap counts.</p>
+    <p class="tagline">Aircraft noise over Granada Hills.<br>Log what you hear. Help build the record.</p>
   </header>
+
+  <a class="top-lawa-link" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
+    File directly with LAWA
+  </a>
 
   <!-- LIVE COUNTER -->
   <div class="live-counter">
     <div class="counter-left">
       <div class="live-dot"></div>
       <div class="counter-label">
-        <strong>Reports Today</strong>
-        Granada Hills residents
+        <strong>Reports Logged</strong>
+        Granada Hills community
       </div>
     </div>
     <div>
@@ -560,15 +836,19 @@
     </div>
   </div>
 
-  <!-- INFO STRIP -->
-  <div class="info-strip">
-    <div class="info-card">
-      <div class="info-number">230K+</div>
-      <div class="info-desc">VNY operations per year</div>
+  <!-- STATS BAR -->
+  <div class="stats-bar" aria-label="Community report statistics">
+    <div class="stat-card">
+      <div class="stat-number" id="stats-24h">0</div>
+      <div class="stat-desc">Last 24 hrs</div>
     </div>
-    <div class="info-card">
-      <div class="info-number" id="tonight-count">0</div>
-      <div class="info-desc">reports tonight so far</div>
+    <div class="stat-card">
+      <div class="stat-number" id="stats-7d">0</div>
+      <div class="stat-desc">Last 7 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="stats-all-time">0</div>
+      <div class="stat-desc">All time</div>
     </div>
   </div>
 
@@ -576,14 +856,14 @@
   <div class="zone-section">
     <span class="zone-label">Where are you in Granada Hills?</span>
     <div class="zone-grid">
-      <button class="zone-btn" data-zone="Granada Hills North" onclick="selectZone(this)">
-        <span class="zone-icon">🏔️</span>North
+      <button class="zone-btn" data-zone="Granada Hills North" aria-pressed="false" onclick="selectZone(this)">
+        <span class="zone-icon">N</span>North
       </button>
-      <button class="zone-btn" data-zone="Granada Hills Central" onclick="selectZone(this)">
-        <span class="zone-icon">🏘️</span>Central
+      <button class="zone-btn" data-zone="Granada Hills Central" aria-pressed="false" onclick="selectZone(this)">
+        <span class="zone-icon">C</span>Central
       </button>
-      <button class="zone-btn" data-zone="Granada Hills South" onclick="selectZone(this)">
-        <span class="zone-icon">🌆</span>South
+      <button class="zone-btn" data-zone="Granada Hills South" aria-pressed="false" onclick="selectZone(this)">
+        <span class="zone-icon">S</span>South
       </button>
     </div>
     <div class="no-zone-warn" id="zone-warn">Please select your neighborhood area first</div>
@@ -592,10 +872,12 @@
   <!-- MAIN REPORT BUTTON -->
   <div class="report-section">
     <button class="report-btn" id="reportBtn" onclick="reportPlane()">
-      <span class="btn-plane">✈️</span>
+      <span class="btn-plane">&#9992;</span>
       <span class="btn-main-text">I HEARD A PLANE</span>
       <span class="btn-sub-text">Tap to log a community report</span>
     </button>
+    <p class="report-privacy">Private by design: no name, email, address, or login.</p>
+    <p class="report-helper"><strong>Log the community record, then file the official LAWA complaint.</strong></p>
   </div>
 
   <!-- RECENT LOG -->
@@ -606,7 +888,7 @@
     </div>
     <div class="log-list" id="logList">
       <div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">
-        No reports yet tonight.<br>Be the first to log a flight.
+        No reports logged yet.<br>Be the first to document a flight.
       </div>
     </div>
   </div>
@@ -616,10 +898,10 @@
     <div class="lawa-title">File Direct with LAWA</div>
     <p class="lawa-desc">A consistent complaint record helps document community impact. Takes about 60 seconds.</p>
     <a class="lawa-btn lawa-btn-primary" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
-      📋 File Official VNY Noise Complaint
+      File Official VNY Noise Complaint
     </a>
     <a class="lawa-btn" href="https://airnoise.io" target="_blank" rel="noopener">
-      📱 Download AirNoise App (One-Tap Filing)
+      Download AirNoise App (One-Tap Filing)
     </a>
   </div>
 
@@ -631,7 +913,7 @@
     <p style="font-size:12px; color: rgba(245,158,11,0.6); margin-bottom: 10px; font-weight: 500;">
       Monitoring infrastructure and data documentation provided by<br>
       <a href="https://jnosystems.com" target="_blank" rel="noopener" style="color: var(--amber); text-decoration: none; font-weight: 600;">JNO Systems LLC</a>
-      &nbsp;·&nbsp; AI Auditing &amp; Field Research
+      &nbsp;&middot;&nbsp; AI Auditing &amp; Field Research
     </p>
     <div class="footer-links">
       <a class="footer-link" href="https://www.quietskiesnow.org" target="_blank">Quiet Skies Network</a>
@@ -649,7 +931,7 @@
 <script>
   // Generate stars
   const starsEl = document.getElementById('stars');
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 90; i++) {
     const star = document.createElement('div');
     star.className = 'star';
     const size = Math.random() * 2 + 0.5;
@@ -670,16 +952,95 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndocWV2amVqbGRieGd0bHlhZ3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMTM4NDAsImV4cCI6MjA5MTY4OTg0MH0.gSY-n_7rTBRDa_ZrXKLMqvvQFZpOSJmUIzKAK1VTx-0';
   const reportsTable = 'reports';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const COOLDOWN_SECONDS = 30;
+  const LAST_SUBMISSION_KEY = 'qsgh_last_submission_ts';
+  const LAWA_BANNER_MS = 8000;
+  const VALID_ZONES = [
+    'Granada Hills North',
+    'Granada Hills Central',
+    'Granada Hills South'
+  ];
 
   // State
   let selectedZone = null;
   let reportCount = 0;
-  let tonightCount = 0;
+  let weeklyCount = 0;
+  let allTimeCount = 0;
   let reports = [];
   let isSubmitting = false;
+  let cooldownTimer = null;
+  let lawaBannerTimer = null;
 
   function setBadge(text) {
     document.getElementById('log-badge').textContent = text;
+  }
+
+  function getCooldownRemaining() {
+    const lastSubmission = Number(sessionStorage.getItem(LAST_SUBMISSION_KEY) || 0);
+    if (!lastSubmission) return 0;
+    const elapsed = Math.floor((Date.now() - lastSubmission) / 1000);
+    return Math.max(0, COOLDOWN_SECONDS - elapsed);
+  }
+
+  function updateCooldownButton() {
+    const btn = document.getElementById('reportBtn');
+    const mainText = btn.querySelector('.btn-main-text');
+    const subText = btn.querySelector('.btn-sub-text');
+    const remaining = getCooldownRemaining();
+
+    if (remaining > 0) {
+      btn.classList.add('cooldown');
+      btn.setAttribute('aria-disabled', 'true');
+      mainText.textContent = `WAIT ${remaining}s`;
+      subText.textContent = 'Cooldown prevents duplicate taps';
+    } else {
+      btn.classList.remove('cooldown');
+      btn.setAttribute('aria-disabled', 'false');
+      mainText.textContent = 'I HEARD A PLANE';
+      subText.textContent = 'Tap to log a community report';
+      if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+      }
+    }
+  }
+
+  function startCooldown() {
+    sessionStorage.setItem(LAST_SUBMISSION_KEY, String(Date.now()));
+    updateCooldownButton();
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    cooldownTimer = setInterval(updateCooldownButton, 250);
+  }
+
+  function showLawaBanner() {
+    const banner = document.getElementById('lawa-banner');
+    const bar = document.getElementById('lawa-banner-countdown');
+
+    if (lawaBannerTimer) clearTimeout(lawaBannerTimer);
+    banner.classList.add('show');
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bar.style.transition = `width ${LAWA_BANNER_MS}ms linear`;
+        bar.style.width = '0%';
+      });
+    });
+
+    lawaBannerTimer = setTimeout(dismissLawaBanner, LAWA_BANNER_MS);
+  }
+
+  function dismissLawaBanner() {
+    const banner = document.getElementById('lawa-banner');
+    const bar = document.getElementById('lawa-banner-countdown');
+    banner.classList.remove('show');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    if (lawaBannerTimer) {
+      clearTimeout(lawaBannerTimer);
+      lawaBannerTimer = null;
+    }
   }
 
   function getTodayStartIso() {
@@ -692,11 +1053,20 @@
     return new Date(Date.now() - 86400000).toISOString();
   }
 
+  function getSevenDaysAgoIso() {
+    return new Date(Date.now() - 7 * 86400000).toISOString();
+  }
+
   async function getReportCount(sinceIso) {
-    const { count, error } = await supabaseClient
+    let query = supabaseClient
       .from(reportsTable)
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', sinceIso);
+      .select('id', { count: 'exact', head: true });
+
+    if (sinceIso) {
+      query = query.gte('created_at', sinceIso);
+    }
+
+    const { count, error } = await query;
 
     if (error) throw error;
     return count || 0;
@@ -705,21 +1075,28 @@
   async function loadData() {
     setBadge('Loading');
     try {
-      const [{ data: recentReports, error: recentError }, reportsLastDay, reportsToday] = await Promise.all([
+      const [
+        { data: recentReports, error: recentError },
+        reportsLastDay,
+        reportsLastWeek,
+        reportsAllTime
+      ] = await Promise.all([
         supabaseClient
           .from(reportsTable)
-          .select('id, created_at, zone, reported_at')
+          .select('id, created_at, zone')
           .order('created_at', { ascending: false })
-          .limit(8),
+          .limit(5),
         getReportCount(getOneDayAgoIso()),
-        getReportCount(getTodayStartIso())
+        getReportCount(getSevenDaysAgoIso()),
+        getReportCount()
       ]);
 
       if (recentError) throw recentError;
 
       reports = recentReports || [];
       reportCount = reportsLastDay;
-      tonightCount = reportsToday;
+      weeklyCount = reportsLastWeek;
+      allTimeCount = reportsAllTime;
       updateUI();
       setBadge('Live');
     } catch(e) {
@@ -731,22 +1108,24 @@
 
   function updateUI() {
     document.getElementById('counter').textContent = reportCount;
-    document.getElementById('tonight-count').textContent = tonightCount;
+    document.getElementById('stats-24h').textContent = reportCount;
+    document.getElementById('stats-7d').textContent = weeklyCount;
+    document.getElementById('stats-all-time').textContent = allTimeCount;
     renderLog();
   }
 
   function renderLog() {
     const list = document.getElementById('logList');
-    const recent = reports.slice(0, 8);
+    const recent = reports.slice(0, 5);
     if (recent.length === 0) {
-      list.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">No reports yet tonight.<br>Be the first to log a flight.</div>';
+      list.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--muted); font-size:14px;">No reports logged yet.<br>Be the first to document a flight.</div>';
       return;
     }
     list.innerHTML = recent.map((r, i) => `
       <div class="log-item">
-        <div class="log-zone">✈️ ${escapeHtml(r.zone)}</div>
+        <div class="log-time">${formatTime(r.created_at)}</div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span class="log-time">${formatTime(r.created_at)}</span>
+          <span class="log-zone">${escapeHtml(formatZoneLabel(r.zone))}</span>
           ${i === 0 ? '<div class="log-new"></div>' : ''}
         </div>
       </div>
@@ -773,15 +1152,29 @@
     return `${h}:${m} ${ampm}`;
   }
 
+  function formatZoneLabel(value) {
+    return String(value || '').replace('Granada Hills ', '');
+  }
+
   function selectZone(btn) {
-    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.zone-btn').forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     btn.classList.add('active');
-    selectedZone = btn.dataset.zone;
+    btn.setAttribute('aria-pressed', 'true');
+    selectedZone = VALID_ZONES.includes(btn.dataset.zone) ? btn.dataset.zone : null;
     document.getElementById('zone-warn').classList.remove('show');
   }
 
   async function reportPlane() {
-    if (!selectedZone) {
+    const cooldownRemaining = getCooldownRemaining();
+    if (cooldownRemaining > 0) {
+      updateCooldownButton();
+      return;
+    }
+
+    if (!VALID_ZONES.includes(selectedZone)) {
       document.getElementById('zone-warn').classList.add('show');
       document.querySelectorAll('.zone-btn').forEach(b => {
         b.style.animation = 'none';
@@ -809,21 +1202,19 @@
 
       if (error) throw error;
 
-      await loadData();
+      startCooldown();
+      loadData().catch((loadError) => {
+        console.error('Report saved, but refresh failed:', loadError);
+      });
 
       // Show toast
       const toast = document.getElementById('toast');
       const toastSub = document.getElementById('toast-sub');
-      toastSub.textContent = `${selectedZone} · ${formatTime(reportTime)}`;
+      toastSub.innerHTML = `${escapeHtml(formatZoneLabel(selectedZone))} &middot; ${formatTime(reportTime)}`;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
 
-      // Open LAWA complaint form after short delay
-      setTimeout(() => {
-        if (confirm('Open the official LAWA complaint form to file this report?\n\nTakes about 60 seconds. Every complaint counts.')) {
-          window.open('https://viewpoint.emsbk.com/vny1', '_blank');
-        }
-      }, 1200);
+      setTimeout(showLawaBanner, 700);
     } catch(e) {
       console.error('Could not save report:', e);
       alert('Sorry, the shared report could not be saved. Please check your connection and try again.');
@@ -834,6 +1225,12 @@
 
   // Init
   loadData();
+  setInterval(loadData, 5 * 60 * 1000);
+  updateCooldownButton();
+  if (getCooldownRemaining() > 0) {
+    cooldownTimer = setInterval(updateCooldownButton, 250);
+  }
+  document.getElementById('lawa-banner-link').addEventListener('click', dismissLawaBanner);
 
   supabaseClient
     .channel('reports-live')
@@ -843,6 +1240,15 @@
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') setBadge('Live');
     });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((error) => {
+        console.warn('Service worker registration failed:', error);
+      });
+    });
+  }
 </script>
 </body>
 </html>
+
