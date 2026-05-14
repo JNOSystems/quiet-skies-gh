@@ -1,0 +1,19 @@
+{
+  "name": "Quiet Skies Granada Hills",
+  "short_name": "Quiet Skies",
+  "description": "Log aircraft noise reports in Granada Hills.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03050a",
+  "theme_color": "#03050a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

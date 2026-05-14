@@ -671,6 +671,13 @@
     text-decoration: none;
     opacity: 0.8;
   }
+  .external-link-status {
+    min-height: 18px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: rgba(245,158,11,0.82);
+    line-height: 1.4;
+  }
   .privacy-note {
     margin-top: 12px;
     font-size: 11px;
@@ -840,15 +847,15 @@
   <div class="stats-bar" aria-label="Community report statistics">
     <div class="stat-card">
       <div class="stat-number" id="stats-24h">0</div>
-      <div class="stat-desc">Last 24 hrs</div>
+      <div class="stat-desc">Last 24 Hrs</div>
     </div>
     <div class="stat-card">
       <div class="stat-number" id="stats-7d">0</div>
-      <div class="stat-desc">Last 7 days</div>
+      <div class="stat-desc">Last 7 Days</div>
     </div>
     <div class="stat-card">
       <div class="stat-number" id="stats-all-time">0</div>
-      <div class="stat-desc">All time</div>
+      <div class="stat-desc">All Time</div>
     </div>
   </div>
 
@@ -916,10 +923,11 @@
       &nbsp;&middot;&nbsp; AI Auditing &amp; Field Research
     </p>
     <div class="footer-links">
-      <a class="footer-link" href="https://www.quietskiesnow.org" target="_blank">Quiet Skies Network</a>
-      <a class="footer-link" href="https://webtrak.bksv.com" target="_blank">WebTrak Live Flights</a>
-      <a class="footer-link" href="https://ghnnc.org" target="_blank">GHNNC</a>
+      <a class="footer-link" href="https://www.quietskiesnow.org" target="_blank" rel="noopener">Quiet Skies Network</a>
+      <a class="footer-link" id="vny-webtrak-link" href="https://webtrak.emsbk.com/vny4" data-official-link="VNY_WEBTRAK" target="_blank" rel="noopener">WebTrak Live Flights</a>
+      <a class="footer-link" href="https://ghnnc.org" target="_blank" rel="noopener">GHNNC</a>
     </div>
+    <div class="external-link-status" id="external-link-status" role="status" aria-live="polite"></div>
     <p class="privacy-note">
       Reports save timestamp and selected neighborhood zone only.<br>
       No name, email, address, or login is requested.
@@ -955,6 +963,9 @@
   const COOLDOWN_SECONDS = 30;
   const LAST_SUBMISSION_KEY = 'qsgh_last_submission_ts';
   const LAWA_BANNER_MS = 8000;
+  const OFFICIAL_LINKS = {
+    VNY_WEBTRAK: 'https://webtrak.emsbk.com/vny4'
+  };
   const VALID_ZONES = [
     'Granada Hills North',
     'Granada Hills Central',
@@ -973,6 +984,33 @@
 
   function setBadge(text) {
     document.getElementById('log-badge').textContent = text;
+  }
+
+  function showExternalLinkStatus(message) {
+    const status = document.getElementById('external-link-status');
+    status.textContent = message;
+    setTimeout(() => {
+      if (status.textContent === message) status.textContent = '';
+    }, 5000);
+  }
+
+  function configureOfficialLinks() {
+    document.querySelectorAll('[data-official-link]').forEach((link) => {
+      const key = link.dataset.officialLink;
+      const url = OFFICIAL_LINKS[key];
+      if (!url) return;
+      link.href = url;
+
+      if (key === 'VNY_WEBTRAK') {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const opened = window.open(url, '_blank', 'noopener');
+          if (!opened) {
+            showExternalLinkStatus('Official flight tracking may be temporarily unavailable.');
+          }
+        });
+      }
+    });
   }
 
   function getCooldownRemaining() {
@@ -1224,6 +1262,7 @@
   }
 
   // Init
+  configureOfficialLinks();
   loadData();
   setInterval(loadData, 5 * 60 * 1000);
   updateCooldownButton();
