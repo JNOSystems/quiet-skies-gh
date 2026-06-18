@@ -1,96 +1,82 @@
-# Custom Domain Preflight - Pending Custom Domain
+# Custom Domain Setup - Completed
 
-Status: pending final custom domain approval. No domain purchase, Netlify configuration, DNS change, deploy, app behavior change, or service-worker change has been made.
+Status: completed. The approved custom public domain is live. No app behavior, logging workflow, privacy model, Supabase configuration, manifest behavior, or service-worker behavior was changed by this documentation update.
 
-## Current Public URL
+## Current Public URLs
 
-- Netlify URL: `https://quiet-skies-gh.netlify.app`
+- Primary public URL: `https://www.quietskiesgh.org`
+- Apex redirect: `https://quietskiesgh.org` redirects to `https://www.quietskiesgh.org`
+- Netlify fallback URL: `https://quiet-skies-gh.netlify.app`
 
-## Candidate Domains
+## Domain Decision
 
-Pending approval:
+Approved domain:
 
 - `quietskiesgh.org`
+
+Primary host:
+
+- `www.quietskiesgh.org`
+
+Previous candidate domains no longer selected for this setup:
+
 - `granadahillsquietskies.org`
-- Another approved domain selected by the project owner
+- Other pending candidate domains
 
 ## Repo Findings
 
 - `QSGH_AGENT.md`
-  - Contains the current Netlify site reference: `quiet-skies-gh.netlify.app`
-  - Safe to update only after the final domain is approved, so the operating manual does not point to a speculative domain.
-- `manifest.json`
-  - Uses relative values only: `start_url: "/"` and `scope: "/"`
-  - No custom-domain change is needed before domain selection.
-- `sw.js`
-  - Caches same-origin local paths only: `/`, `/manifest.json`, `/icon.svg`
-  - No custom-domain change is needed before domain selection.
-- `quiet_skies_granada_hills.html`
-  - No canonical URL, Open Graph URL, Twitter URL, or hardcoded Netlify public URL was found.
-  - Existing absolute URLs are external service links and should not be changed as part of the custom-domain move.
+  - Updated to list the approved public site, apex redirect, and Netlify fallback.
 - `README.md`
-  - No current public URL was found.
+  - Updated with the approved public site and apex redirect note.
+- `manifest.json`
+  - Uses relative values only: `start_url: "/"` and `scope: "/"`.
+  - No custom-domain code change was required.
+- `sw.js`
+  - Caches same-origin local paths only: `/`, `/manifest.json`, `/icon.svg`.
+  - No custom-domain code change was required.
+- `quiet_skies_granada_hills.html`
+  - No canonical URL, Open Graph URL, Twitter URL, or hardcoded Netlify public URL was added.
+  - Existing absolute URLs remain external service links and were not changed.
 
-## Files That May Need Updates After Final Domain Selection
+## Files Updated For Domain Documentation
 
 - `QSGH_AGENT.md`
-  - Update the Netlify site reference if the custom domain becomes the primary public URL.
 - `README.md`
-  - Optional: add the approved public URL for operator reference.
+- `docs/notes/custom_domain_preflight.md`
+
+## Files Not Changed
+
 - `quiet_skies_granada_hills.html`
-  - Optional only if social sharing metadata is later added, such as canonical URL, `og:url`, or `twitter:url`.
 - `manifest.json`
-  - No change expected if the app remains hosted at the domain root.
-  - Revisit only if the app moves under a path such as `/quiet-skies/`.
 - `sw.js`
-  - No change expected because it caches same-origin paths only.
-  - Revisit only if future cache entries include absolute public URLs.
+- Supabase SQL, grants, or schema files
 
-## Netlify Dashboard Steps Outside Codex
+## Netlify And DNS State
 
-1. Select and acquire the approved domain outside Codex.
-2. In Netlify, open the Quiet Skies Granada Hills site.
-3. Go to Domain management / Production domains.
-4. Add the approved custom domain.
-5. Set the intended primary domain.
-6. Let Netlify provision HTTPS for the new domain.
-7. Keep `quiet-skies-gh.netlify.app` available as the Netlify fallback unless there is a reason to change that default behavior.
+The approved custom domain is live outside Codex:
+
+- `https://www.quietskiesgh.org`
+- `https://quietskiesgh.org` redirects to the primary `www` domain.
+
+Netlify and DNS remain external operational configuration. Do not add DNS assumptions, redirects, or domain-specific routing into app code unless explicitly approved later.
 
 Reference docs:
 
 - Netlify external DNS: https://docs.netlify.com/manage/domains/configure-domains/configure-external-dns/
 - Netlify DNS records: https://docs.netlify.com/manage/domains/configure-domains/dns-records/
 
-## DNS Records Likely Needed
-
-Use Netlify's domain-specific instructions after adding the domain in the dashboard.
-
-For external DNS, likely records are:
-
-- `www` subdomain:
-  - Type: `CNAME`
-  - Name/host: `www`
-  - Target: `quiet-skies-gh.netlify.app`
-- Apex/root domain:
-  - Preferred if supported by DNS provider: `ALIAS`, `ANAME`, or flattened `CNAME`
-  - Name/host: `@` or blank, depending on provider
-  - Target: `apex-loadbalancer.netlify.com`
-  - Fallback if ALIAS/ANAME/flattened CNAME is not supported:
-    - Type: `A`
-    - Name/host: `@` or blank
-    - Target: `75.2.60.5`
-
 ## Post-Change QA Checklist
 
-- Confirm the approved custom domain resolves.
-- Confirm `www` and apex/root behavior matches the selected primary-domain policy.
-- Confirm HTTPS certificate is active in Netlify.
-- Open the custom domain on mobile and desktop.
+- Confirm `https://www.quietskiesgh.org` resolves.
+- Confirm `https://quietskiesgh.org` redirects to `https://www.quietskiesgh.org`.
+- Confirm HTTPS is active for the primary public domain.
+- Open the primary domain on mobile and desktop.
 - Confirm the app loads without mixed-content warnings.
-- Confirm manifest loads from the custom domain.
-- Confirm `icon.svg` loads from the custom domain.
-- Confirm `sw.js` loads from the custom domain.
-- Confirm service worker does not cache any old absolute public URL.
+- Confirm manifest loads from the primary domain.
+- Confirm `icon.svg` loads from the primary domain.
+- Confirm `sw.js` loads from the primary domain.
+- Confirm service worker does not cache any obsolete absolute public URL.
 - Confirm dashboard labels remain:
   - `Last 24 Hrs`
   - `Last 7 Days`

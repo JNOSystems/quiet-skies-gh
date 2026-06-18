@@ -8,7 +8,9 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 - Alternate working name: Quiet Skies / Aircraft Noise Logger
 - Primary role of this agent: Manage planning, QA, code-change requests, deployment checks, copy edits, and feature specifications for the app.
 - GitHub repo: `JNOSystems/quiet-skies-gh`
-- Netlify site: `quiet-skies-gh.netlify.app`
+- Public site: `https://www.quietskiesgh.org`
+- Apex redirect: `https://quietskiesgh.org` redirects to `https://www.quietskiesgh.org`
+- Netlify fallback: `https://quiet-skies-gh.netlify.app`
 - Primary maintainer: Jon
 
 ## 2. App Purpose
