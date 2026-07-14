@@ -28,14 +28,16 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
   - Central
   - South
 - User taps the main CTA: `I Heard a Plane`
-- App stores a community report using timestamp and selected zone only.
+- App stores a community report using the server timestamp, selected zone, and a random non-identifying submission UUID used only for duplicate prevention.
+- An unresolved network submission must offer explicit `Retry this report` and `Log a new complaint` actions; never resend or reuse it automatically.
 - After logging, the app may direct the user to the official LAWA complaint flow.
 - Local logging must remain separate from official complaint filing.
 
 ## 4. Privacy and Data Collection Rules
 
 - Do not collect name, email, address, login, precise location, or aircraft ID.
-- Store only timestamp and selected zone unless Jon explicitly approves a change.
+- Store the server timestamp, selected zone, and a random submission UUID used only for duplicate prevention.
+- Never use the submission UUID for identity, tracking, analytics, or cross-session profiling.
 - Do not add user identity collection.
 - Do not add precise geolocation.
 - Do not add aircraft identification unless Jon explicitly approves.
@@ -44,12 +46,15 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 
 ## 5. Dashboard Rules
 
-- The dashboard must show exactly these three stats:
-  - `Last 24 Hrs`
-  - `Last 7 Days`
+- The primary dashboard count must show `Today's Complaints` from local midnight in `America/Los_Angeles`.
+- The dashboard must show exactly these four summary periods:
+  - `Today`
+  - `This Week`
+  - `This Month`
   - `All Time`
-- The `All Time` stat must count every logged report.
-- Do not revert the third stat back to `Top zone`.
+- `This Week` starts Monday at local midnight.
+- The `All Time` stat must count every valid logged report.
+- Monthly complaint history must include every month from the first stored report through the current month, including zero-count months.
 - Dashboard copy should stay short, clear, and mobile-readable.
 - Recent Reports should remain useful and lightweight, showing recent activity without exposing personal data.
 
@@ -130,8 +135,9 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 - Confirm privacy copy is visible near the logging action.
 - Confirm no name, email, address, login, precise location, or aircraft ID is being collected.
 - Confirm dashboard labels read:
-  - `Last 24 Hrs`
-  - `Last 7 Days`
+  - `Today`
+  - `This Week`
+  - `This Month`
   - `All Time`
 - Confirm `All Time` uses total report count.
 - Confirm mobile-first layout still feels fast and uncluttered.
@@ -144,7 +150,7 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 
 - Open the live site and verify the expected release is actually visible.
 - Confirm the live page text matches the intended dashboard copy.
-- Confirm `Top zone` is not present if the release should show `All Time`.
+- Confirm monthly complaint history includes zero-count months between the first report and current month.
 - Confirm the live CTA appears early enough on mobile.
 - Confirm logging still works end to end.
 - Confirm official LAWA complaint routing remains visible after logging.

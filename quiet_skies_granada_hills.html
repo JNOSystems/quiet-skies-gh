@@ -11,6 +11,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="dashboard_periods.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -308,6 +309,53 @@
     line-height: 1.45;
     text-align: center;
     color: var(--muted);
+  }
+  .submission-recovery {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid rgba(245,158,11,0.42);
+    border-radius: 8px;
+    background: rgba(245,158,11,0.08);
+  }
+  .submission-recovery[hidden] {
+    display: none;
+  }
+  .submission-recovery-message {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .submission-recovery-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .submission-action {
+    min-height: 46px;
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .submission-action:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+  .submission-action:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+  .submission-action.retry {
+    background: var(--amber);
+    color: #111827;
+  }
+  .submission-action.new {
+    background: transparent;
+    color: var(--text);
   }
   .report-btn {
     width: 100%;
@@ -618,9 +666,9 @@
   /* STATS BAR */
   .stats-bar {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
   .stat-card {
     background: rgba(255,255,255,0.03);
@@ -640,11 +688,60 @@
     overflow-wrap: anywhere;
   }
   .stat-desc {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+
+  /* MONTHLY HISTORY */
+  .monthly-history {
+    margin-bottom: 24px;
+    padding: 16px 0 18px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .monthly-title {
+    margin: 0 0 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .month-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .month-select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 38px 10px 12px;
+    border: 1px solid rgba(245,158,11,0.32);
+    border-radius: 8px;
+    background: #101725;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .month-select:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+  .month-summary {
+    min-height: 21px;
+    margin: 10px 0 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .month-summary strong {
+    color: var(--amber);
   }
 
   /* FOOTER */
@@ -731,11 +828,26 @@
       font-size: 42px;
     }
     .stats-bar {
-      gap: 6px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
       margin-bottom: 18px;
     }
     .stat-card {
-      padding: 10px 6px;
+      min-height: 68px;
+      padding: 10px 8px;
+    }
+    .stat-desc {
+      font-size: 11px;
+    }
+    .monthly-history {
+      margin-bottom: 20px;
+      padding: 14px 0 16px;
+    }
+    .month-select {
+      min-height: 48px;
+    }
+    .submission-recovery-actions {
+      grid-template-columns: 1fr;
     }
     .zone-section {
       margin-bottom: 16px;
@@ -829,35 +941,49 @@
   </a>
 
   <!-- LIVE COUNTER -->
-  <div class="live-counter">
+  <div class="live-counter" aria-label="Today's community complaint count">
     <div class="counter-left">
       <div class="live-dot"></div>
       <div class="counter-label">
-        <strong>Reports Logged</strong>
+        <strong>TODAY&rsquo;S COMPLAINTS</strong>
         Granada Hills community
       </div>
     </div>
     <div>
       <div class="counter-number" id="counter">0</div>
-      <span class="counter-sub">in last 24 hrs</span>
+      <span class="counter-sub">since 12:00 AM PT</span>
     </div>
   </div>
 
   <!-- STATS BAR -->
   <div class="stats-bar" aria-label="Community report statistics">
     <div class="stat-card">
-      <div class="stat-number" id="stats-24h">0</div>
-      <div class="stat-desc">Last 24 Hrs</div>
+      <div class="stat-number" id="stats-today">0</div>
+      <div class="stat-desc">Today</div>
     </div>
     <div class="stat-card">
-      <div class="stat-number" id="stats-7d">0</div>
-      <div class="stat-desc">Last 7 Days</div>
+      <div class="stat-number" id="stats-week">0</div>
+      <div class="stat-desc">This Week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="stats-month">0</div>
+      <div class="stat-desc">This Month</div>
     </div>
     <div class="stat-card">
       <div class="stat-number" id="stats-all-time">0</div>
       <div class="stat-desc">All Time</div>
     </div>
   </div>
+
+  <!-- MONTHLY HISTORY -->
+  <section class="monthly-history" aria-labelledby="monthly-history-title">
+    <h2 class="monthly-title" id="monthly-history-title">Complaints by Month</h2>
+    <label class="month-label" for="month-select">Month and year</label>
+    <select class="month-select" id="month-select" aria-describedby="month-summary">
+      <option>Loading months...</option>
+    </select>
+    <p class="month-summary" id="month-summary" aria-live="polite">Loading monthly complaint history...</p>
+  </section>
 
   <!-- ZONE SELECTOR -->
   <div class="zone-section">
@@ -883,6 +1009,13 @@
       <span class="btn-main-text">I HEARD A PLANE</span>
       <span class="btn-sub-text">Tap to log a community report</span>
     </button>
+    <div class="submission-recovery" id="submission-recovery" role="alert" aria-live="assertive" hidden>
+      <p class="submission-recovery-message" id="submission-recovery-message"></p>
+      <div class="submission-recovery-actions">
+        <button class="submission-action retry" id="retry-report-btn" type="button" onclick="retryPendingReport()">Retry this report</button>
+        <button class="submission-action new" id="new-report-btn" type="button" onclick="logNewComplaint()">Log a new complaint</button>
+      </div>
+    </div>
     <p class="report-privacy">Private by design: no name, email, address, or login.</p>
     <p class="report-helper"><strong>Log the community record, then file the official LAWA complaint.</strong></p>
   </div>
@@ -929,7 +1062,7 @@
     </div>
     <div class="external-link-status" id="external-link-status" role="status" aria-live="polite"></div>
     <p class="privacy-note">
-      Reports save timestamp and selected neighborhood zone only.<br>
+      Reports save timestamp, selected neighborhood zone, and a random duplicate-prevention code only.<br>
       No name, email, address, or login is requested.
     </p>
   </footer>
@@ -962,6 +1095,13 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const COOLDOWN_SECONDS = 30;
   const LAST_SUBMISSION_KEY = 'qsgh_last_submission_ts';
+  const dashboardPeriods = window.QuietSkiesDashboard;
+  const TIME_ZONE = dashboardPeriods.DEFAULT_TIME_ZONE;
+  const REPORT_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+    timeZone: TIME_ZONE,
+    hour: 'numeric',
+    minute: '2-digit'
+  });
   const LAWA_BANNER_MS = 8000;
   const OFFICIAL_LINKS = {
     VNY_WEBTRAK: 'https://webtrak.emsbk.com/vny4'
@@ -971,14 +1111,23 @@
     'Granada Hills Central',
     'Granada Hills South'
   ];
+  const SUBMISSION_STATES = Object.freeze({
+    IDLE: 'idle',
+    SUBMITTING: 'submitting',
+    UNRESOLVED: 'unresolved'
+  });
 
   // State
   let selectedZone = null;
-  let reportCount = 0;
+  let todayCount = 0;
   let weeklyCount = 0;
+  let monthlyCount = 0;
   let allTimeCount = 0;
+  let selectedMonthCount = 0;
+  let selectedMonthKey = null;
+  let availableMonthKeys = [];
   let reports = [];
-  let isSubmitting = false;
+  let submissionState = SUBMISSION_STATES.IDLE;
   let cooldownTimer = null;
   let lawaBannerTimer = null;
 
@@ -1026,12 +1175,26 @@
     const subText = btn.querySelector('.btn-sub-text');
     const remaining = getCooldownRemaining();
 
-    if (remaining > 0) {
+    if (submissionState === SUBMISSION_STATES.SUBMITTING) {
+      btn.disabled = true;
+      btn.classList.add('cooldown');
+      btn.setAttribute('aria-disabled', 'true');
+      mainText.textContent = 'SAVING REPORT';
+      subText.textContent = 'Waiting for confirmation';
+    } else if (submissionState === SUBMISSION_STATES.UNRESOLVED) {
+      btn.disabled = true;
+      btn.classList.add('cooldown');
+      btn.setAttribute('aria-disabled', 'true');
+      mainText.textContent = 'REPORT NEEDS ACTION';
+      subText.textContent = 'Choose retry or new complaint below';
+    } else if (remaining > 0) {
+      btn.disabled = true;
       btn.classList.add('cooldown');
       btn.setAttribute('aria-disabled', 'true');
       mainText.textContent = `WAIT ${remaining}s`;
       subText.textContent = 'Cooldown prevents duplicate taps';
     } else {
+      btn.disabled = false;
       btn.classList.remove('cooldown');
       btn.setAttribute('aria-disabled', 'false');
       mainText.textContent = 'I HEARD A PLANE';
@@ -1081,27 +1244,16 @@
     }
   }
 
-  function getTodayStartIso() {
-    const todayStart = new Date();
-    todayStart.setHours(0,0,0,0);
-    return todayStart.toISOString();
-  }
-
-  function getOneDayAgoIso() {
-    return new Date(Date.now() - 86400000).toISOString();
-  }
-
-  function getSevenDaysAgoIso() {
-    return new Date(Date.now() - 7 * 86400000).toISOString();
-  }
-
-  async function getReportCount(sinceIso) {
+  async function getReportCount(startDate = null, endDate = null, endExclusive = false) {
     let query = supabaseClient
       .from(reportsTable)
       .select('id', { count: 'exact', head: true });
 
-    if (sinceIso) {
-      query = query.gte('created_at', sinceIso);
+    if (startDate) query = query.gte('created_at', startDate.toISOString());
+    if (endDate) {
+      query = endExclusive
+        ? query.lt('created_at', endDate.toISOString())
+        : query.lte('created_at', endDate.toISOString());
     }
 
     const { count, error } = await query;
@@ -1110,31 +1262,101 @@
     return count || 0;
   }
 
+  async function getOldestReportTimestamp() {
+    const { data, error } = await supabaseClient
+      .from(reportsTable)
+      .select('created_at')
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (error) throw error;
+    return data && data.length ? data[0].created_at : null;
+  }
+
+  function configureMonthSelector(firstCreatedAt, now) {
+    const monthSelect = document.getElementById('month-select');
+    const currentMonthKey = dashboardPeriods.getMonthKey(now, TIME_ZONE);
+    const nextKeys = dashboardPeriods.listMonthKeys(firstCreatedAt, now, TIME_ZONE);
+    const optionsChanged = nextKeys.join('|') !== availableMonthKeys.join('|');
+    availableMonthKeys = nextKeys;
+
+    if (!selectedMonthKey || !availableMonthKeys.includes(selectedMonthKey)) {
+      selectedMonthKey = currentMonthKey;
+    }
+
+    if (optionsChanged) {
+      monthSelect.replaceChildren(...availableMonthKeys.map((monthKey) => {
+        const option = document.createElement('option');
+        option.value = monthKey;
+        option.textContent = dashboardPeriods.formatMonthLabel(monthKey);
+        return option;
+      }));
+    }
+
+    monthSelect.value = selectedMonthKey;
+    return currentMonthKey;
+  }
+
+  async function getSelectedMonthCount(currentMonthKey) {
+    if (selectedMonthKey === currentMonthKey) return monthlyCount;
+    const range = dashboardPeriods.getMonthRange(selectedMonthKey, TIME_ZONE);
+    return getReportCount(range.start, range.end, true);
+  }
+
+  function renderMonthSummary() {
+    const summary = document.getElementById('month-summary');
+    const label = dashboardPeriods.formatMonthLabel(selectedMonthKey);
+    const noun = selectedMonthCount === 1 ? 'complaint' : 'complaints';
+    summary.textContent = `${selectedMonthCount} ${noun} recorded in ${label}`;
+  }
+
+  async function handleMonthChange(event) {
+    selectedMonthKey = event.target.value;
+    document.getElementById('month-summary').textContent = 'Loading monthly complaint history...';
+    try {
+      const currentMonthKey = dashboardPeriods.getMonthKey(new Date(), TIME_ZONE);
+      selectedMonthCount = await getSelectedMonthCount(currentMonthKey);
+      renderMonthSummary();
+    } catch (error) {
+      console.error('Could not load monthly complaint count:', error);
+      document.getElementById('month-summary').textContent = 'Monthly complaint history is temporarily unavailable.';
+    }
+  }
+
   async function loadData() {
     setBadge('Loading');
     try {
+      const now = new Date();
+      const boundaries = dashboardPeriods.getPeriodBoundaries(now, TIME_ZONE);
       const [
         { data: recentReports, error: recentError },
-        reportsLastDay,
-        reportsLastWeek,
-        reportsAllTime
+        reportsToday,
+        reportsThisWeek,
+        reportsThisMonth,
+        reportsAllTime,
+        oldestReportTimestamp
       ] = await Promise.all([
         supabaseClient
           .from(reportsTable)
           .select('id, created_at, zone')
           .order('created_at', { ascending: false })
           .limit(5),
-        getReportCount(getOneDayAgoIso()),
-        getReportCount(getSevenDaysAgoIso()),
-        getReportCount()
+        getReportCount(boundaries.todayStart, now),
+        getReportCount(boundaries.weekStart, now),
+        getReportCount(boundaries.monthStart, now),
+        getReportCount(),
+        getOldestReportTimestamp()
       ]);
 
       if (recentError) throw recentError;
 
       reports = recentReports || [];
-      reportCount = reportsLastDay;
-      weeklyCount = reportsLastWeek;
+      todayCount = reportsToday;
+      weeklyCount = reportsThisWeek;
+      monthlyCount = reportsThisMonth;
       allTimeCount = reportsAllTime;
+      const currentMonthKey = configureMonthSelector(oldestReportTimestamp, now);
+      selectedMonthCount = await getSelectedMonthCount(currentMonthKey);
       updateUI();
       setBadge('Live');
     } catch(e) {
@@ -1145,10 +1367,12 @@
   }
 
   function updateUI() {
-    document.getElementById('counter').textContent = reportCount;
-    document.getElementById('stats-24h').textContent = reportCount;
-    document.getElementById('stats-7d').textContent = weeklyCount;
+    document.getElementById('counter').textContent = todayCount;
+    document.getElementById('stats-today').textContent = todayCount;
+    document.getElementById('stats-week').textContent = weeklyCount;
+    document.getElementById('stats-month').textContent = monthlyCount;
     document.getElementById('stats-all-time').textContent = allTimeCount;
+    renderMonthSummary();
     renderLog();
   }
 
@@ -1183,11 +1407,7 @@
   function formatTime(value) {
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return '';
-    let h = d.getHours();
-    const m = String(d.getMinutes()).padStart(2, '0');
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${h}:${m} ${ampm}`;
+    return REPORT_TIME_FORMATTER.format(d);
   }
 
   function formatZoneLabel(value) {
@@ -1205,7 +1425,120 @@
     document.getElementById('zone-warn').classList.remove('show');
   }
 
+  function setRecoveryActionsDisabled(disabled) {
+    document.getElementById('retry-report-btn').disabled = disabled;
+    document.getElementById('new-report-btn').disabled = disabled;
+  }
+
+  function showSubmissionRecovery(pendingSubmission) {
+    submissionState = SUBMISSION_STATES.UNRESOLVED;
+    const zoneLabel = formatZoneLabel(pendingSubmission.zone);
+    document.getElementById('submission-recovery-message').textContent =
+      `We could not confirm the ${zoneLabel} report. Retry that report or log this as a new complaint.`;
+    document.getElementById('submission-recovery').hidden = false;
+    setRecoveryActionsDisabled(false);
+    updateCooldownButton();
+  }
+
+  function hideSubmissionRecovery() {
+    submissionState = SUBMISSION_STATES.IDLE;
+    document.getElementById('submission-recovery').hidden = true;
+    setRecoveryActionsDisabled(false);
+    updateCooldownButton();
+  }
+
+  function createNewPendingSubmission(reportZone) {
+    const reportTime = new Date();
+    return dashboardPeriods.createPendingSubmission(
+      sessionStorage,
+      reportZone,
+      reportTime.getTime(),
+      window.crypto,
+      formatTime(reportTime)
+    );
+  }
+
+  function completeSubmission(pendingSubmission) {
+    dashboardPeriods.clearPendingSubmission(sessionStorage, pendingSubmission.id);
+    hideSubmissionRecovery();
+    startCooldown();
+    loadData().catch((loadError) => {
+      console.error('Report saved, but refresh failed:', loadError);
+    });
+
+    const toast = document.getElementById('toast');
+    const toastSub = document.getElementById('toast-sub');
+    toastSub.innerHTML = `${escapeHtml(formatZoneLabel(pendingSubmission.zone))} &middot; ${escapeHtml(pendingSubmission.reportedAt)}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(showLawaBanner, 700);
+  }
+
+  async function submitPendingReport(pendingSubmission) {
+    if (submissionState === SUBMISSION_STATES.SUBMITTING) return;
+    submissionState = SUBMISSION_STATES.SUBMITTING;
+    setRecoveryActionsDisabled(true);
+    updateCooldownButton();
+
+    try {
+      const { error } = await supabaseClient
+        .from(reportsTable)
+        .insert({
+          zone: pendingSubmission.zone,
+          reported_at: pendingSubmission.reportedAt,
+          submission_id: pendingSubmission.id
+        });
+
+      if (error && !dashboardPeriods.isDuplicateSubmissionError(error)) throw error;
+      completeSubmission(pendingSubmission);
+    } catch (error) {
+      console.error('Could not save report:', error);
+      if (dashboardPeriods.isAmbiguousNetworkError(error)) {
+        showSubmissionRecovery(pendingSubmission);
+      } else {
+        dashboardPeriods.clearPendingSubmission(sessionStorage, pendingSubmission.id);
+        hideSubmissionRecovery();
+        alert('Sorry, the shared report was not accepted. Please try again.');
+      }
+    } finally {
+      if (submissionState === SUBMISSION_STATES.SUBMITTING) {
+        submissionState = SUBMISSION_STATES.IDLE;
+      }
+      setRecoveryActionsDisabled(false);
+      updateCooldownButton();
+    }
+  }
+
+  async function retryPendingReport() {
+    const pendingSubmission = dashboardPeriods.getPendingSubmission(sessionStorage);
+    if (!pendingSubmission) {
+      hideSubmissionRecovery();
+      return;
+    }
+    await submitPendingReport(pendingSubmission);
+  }
+
+  async function logNewComplaint() {
+    const previousSubmission = dashboardPeriods.getPendingSubmission(sessionStorage);
+    if (!previousSubmission) {
+      hideSubmissionRecovery();
+      return;
+    }
+
+    const reportZone = VALID_ZONES.includes(selectedZone) ? selectedZone : previousSubmission.zone;
+    dashboardPeriods.clearPendingSubmission(sessionStorage, previousSubmission.id);
+    hideSubmissionRecovery();
+    await submitPendingReport(createNewPendingSubmission(reportZone));
+  }
+
   async function reportPlane() {
+    if (submissionState === SUBMISSION_STATES.SUBMITTING) return;
+    if (submissionState === SUBMISSION_STATES.UNRESOLVED) {
+      const pendingSubmission = dashboardPeriods.getPendingSubmission(sessionStorage);
+      if (pendingSubmission) showSubmissionRecovery(pendingSubmission);
+      return;
+    }
+
     const cooldownRemaining = getCooldownRemaining();
     if (cooldownRemaining > 0) {
       updateCooldownButton();
@@ -1221,48 +1554,21 @@
       return;
     }
 
-    if (isSubmitting) return;
-    isSubmitting = true;
-
     const btn = document.getElementById('reportBtn');
     btn.classList.add('fired');
     setTimeout(() => btn.classList.remove('fired'), 400);
+    await submitPendingReport(createNewPendingSubmission(selectedZone));
+  }
 
-    const reportTime = new Date();
-
-    try {
-      const { error } = await supabaseClient
-        .from(reportsTable)
-        .insert({
-          zone: selectedZone,
-          reported_at: formatTime(reportTime)
-        });
-
-      if (error) throw error;
-
-      startCooldown();
-      loadData().catch((loadError) => {
-        console.error('Report saved, but refresh failed:', loadError);
-      });
-
-      // Show toast
-      const toast = document.getElementById('toast');
-      const toastSub = document.getElementById('toast-sub');
-      toastSub.innerHTML = `${escapeHtml(formatZoneLabel(selectedZone))} &middot; ${formatTime(reportTime)}`;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-
-      setTimeout(showLawaBanner, 700);
-    } catch(e) {
-      console.error('Could not save report:', e);
-      alert('Sorry, the shared report could not be saved. Please check your connection and try again.');
-    } finally {
-      isSubmitting = false;
-    }
+  function restorePendingSubmission() {
+    const pendingSubmission = dashboardPeriods.getPendingSubmission(sessionStorage);
+    if (pendingSubmission) showSubmissionRecovery(pendingSubmission);
   }
 
   // Init
   configureOfficialLinks();
+  document.getElementById('month-select').addEventListener('change', handleMonthChange);
+  restorePendingSubmission();
   loadData();
   setInterval(loadData, 5 * 60 * 1000);
   updateCooldownButton();

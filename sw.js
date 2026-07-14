@@ -1,6 +1,7 @@
-const CACHE_NAME = 'quiet-skies-gh-v2-webtrak';
+const CACHE_NAME = 'quiet-skies-gh-v4-idempotency';
 const APP_SHELL = [
   '/',
+  '/dashboard_periods.js',
   '/manifest.json',
   '/icon.svg'
 ];

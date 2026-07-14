@@ -78,8 +78,9 @@ Reference docs:
 - Confirm `sw.js` loads from the primary domain.
 - Confirm service worker does not cache any obsolete absolute public URL.
 - Confirm dashboard labels remain:
-  - `Last 24 Hrs`
-  - `Last 7 Days`
+  - `Today`
+  - `This Week`
+  - `This Month`
   - `All Time`
 - Confirm North, Central, and South zone selection still works.
 - Confirm `I Heard a Plane` logging behavior is unchanged.
