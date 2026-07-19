@@ -240,10 +240,11 @@ test('migration enforces uniqueness for non-null submission UUIDs', () => {
   assert.match(migration, /drop column if exists submission_id/i);
 });
 
-test('dashboard markup exposes four periods and an accessible month selector', () => {
+test('dashboard markup exposes one primary count, three summaries, and an accessible month selector', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'quiet_skies_granada_hills.html'), 'utf8');
   assert.match(html, /TODAY&(?:rsquo|#8217);S COMPLAINTS/i);
-  assert.match(html, /<div class="stat-desc">Today<\/div>/);
+  assert.doesNotMatch(html, /id="stats-today"/);
+  assert.equal((html.match(/class="stat-card"/g) || []).length, 3);
   assert.match(html, /<div class="stat-desc">This Week<\/div>/);
   assert.match(html, /<div class="stat-desc">This Month<\/div>/);
   assert.match(html, /<div class="stat-desc">All Time<\/div>/);
@@ -251,6 +252,8 @@ test('dashboard markup exposes four periods and an accessible month selector', (
   assert.match(html, /<select class="month-select" id="month-select"/);
   assert.match(html, />Retry this report<\/button>/);
   assert.match(html, />Log a new complaint<\/button>/);
+  assert.ok(html.indexOf('TODAY&rsquo;S COMPLAINTS') < html.indexOf('File directly with LAWA'));
+  assert.ok(html.indexOf('Recent Reports') < html.indexOf('Complaints by Month'));
 });
 
 test('refresh recovery displays unresolved choices without submitting automatically', () => {
@@ -269,17 +272,22 @@ test('inline application script parses and service worker caches its local depen
     .map((match) => match[1])
     .filter((script) => script.trim());
   assert.doesNotThrow(() => new Function(inlineScripts.at(-1)));
+  assert.doesNotMatch(html, /\.from\(reportsTable\)[\s\S]{0,200}\.insert\(/);
+  assert.match(html, /secureReporting\.submitReport/);
+  assert.match(html, /requestFreshTurnstileToken/);
 
   const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-  assert.match(serviceWorker, /quiet-skies-gh-v4-idempotency/);
+  assert.match(serviceWorker, /quiet-skies-gh-v5-secure-reporting/);
   assert.match(serviceWorker, /\/dashboard_periods\.js/);
+  assert.match(serviceWorker, /\/secure_report_client\.js/);
+  assert.match(serviceWorker, /\/runtime-config\.js/);
 });
 
-test('service worker deletes obsolete caches and bypasses cross-origin Supabase requests', async () => {
+test('service worker deletes obsolete caches and bypasses API and Supabase requests', async () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const listeners = {};
   const deleted = [];
-  const cacheName = 'quiet-skies-gh-v4-idempotency';
+  const cacheName = 'quiet-skies-gh-v5-secure-reporting';
   const context = {
     URL,
     fetch: async () => ({ clone: () => ({}) }),
@@ -306,6 +314,24 @@ test('service worker deletes obsolete caches and bypasses cross-origin Supabase 
   let responded = false;
   listeners.fetch({
     request: { method: 'GET', url: 'https://whqevjejldbxgtlyagpw.supabase.co/rest/v1/reports' },
+    respondWith: () => { responded = true; }
+  });
+  assert.equal(responded, false);
+
+  listeners.fetch({
+    request: { method: 'GET', url: 'https://www.quietskiesgh.org/api/report' },
+    respondWith: () => { responded = true; }
+  });
+  assert.equal(responded, false);
+
+  listeners.fetch({
+    request: { method: 'GET', url: 'https://www.quietskiesgh.org/.netlify/functions/submit-report' },
+    respondWith: () => { responded = true; }
+  });
+  assert.equal(responded, false);
+
+  listeners.fetch({
+    request: { method: 'POST', url: 'https://www.quietskiesgh.org/api/report' },
     respondWith: () => { responded = true; }
   });
   assert.equal(responded, false);

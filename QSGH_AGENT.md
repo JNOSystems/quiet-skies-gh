@@ -28,7 +28,10 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
   - Central
   - South
 - User taps the main CTA: `I Heard a Plane`
-- App stores a community report using the server timestamp, selected zone, and a random non-identifying submission UUID used only for duplicate prevention.
+- Browser obtains a fresh Turnstile token and sends only zone, submission UUID, and token to `POST /api/report`.
+- The Netlify Function validates the request and calls the service-role-only database RPC.
+- The browser must never insert directly into `public.reports`.
+- App stores a community report using the database server timestamp, selected zone, and a random non-identifying submission UUID used only for duplicate prevention.
 - An unresolved network submission must offer explicit `Retry this report` and `Log a new complaint` actions; never resend or reuse it automatically.
 - After logging, the app may direct the user to the official LAWA complaint flow.
 - Local logging must remain separate from official complaint filing.
@@ -38,6 +41,9 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 - Do not collect name, email, address, login, precise location, or aircraft ID.
 - Store the server timestamp, selected zone, and a random submission UUID used only for duplicate prevention.
 - Never use the submission UUID for identity, tracking, analytics, or cross-session profiling.
+- Netlify may process the client IP only to verify Turnstile and derive an HMAC abuse-control hash.
+- Never store or log the raw IP or Turnstile token.
+- Store short-lived HMAC source hashes only in the inaccessible private rate-limit table, never with the complaint row.
 - Do not add user identity collection.
 - Do not add precise geolocation.
 - Do not add aircraft identification unless Jon explicitly approves.
@@ -47,8 +53,7 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 ## 5. Dashboard Rules
 
 - The primary dashboard count must show `Today's Complaints` from local midnight in `America/Los_Angeles`.
-- The dashboard must show exactly these four summary periods:
-  - `Today`
+- Below the primary count, the dashboard must show exactly these three summary periods:
   - `This Week`
   - `This Month`
   - `All Time`
@@ -79,16 +84,32 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 
 ## 8. Netlify Deployment Rules
 
-- This site may be deployed manually by drag-and-drop rather than GitHub continuous deployment.
-- The deploy-ready folder should contain production-root files, preferably:
+- Netlify is connected to GitHub and deploys `main` automatically.
+- Pull requests must use Deploy Previews before production merge.
+- The generated `dist/` directory must contain exactly:
   - `index.html`
+  - `dashboard_periods.js`
+  - `secure_report_client.js`
+  - `runtime-config.js`
   - `manifest.json`
   - `sw.js`
   - `icon.svg`
+- Netlify Functions deploy separately from `netlify/functions`.
 - Do not include `.git`, `node_modules`, cache files, temp files, OneDrive files, or workspace files in deploy packages.
-- Do not include source folders or unrelated project artifacts in deploy bundles.
+- Do not publish tests, migrations, internal documentation, incident evidence, or server secrets.
 - Verify the deploy package contains the current production text before upload.
 - Require review before any production deploy.
+
+### Required secure-reporting variables
+
+- Functions: `SUPABASE_URL`
+- Functions secret: `SUPABASE_SECRET_KEY`
+- Functions secret: `TURNSTILE_SECRET_KEY`
+- Functions secret: `RATE_LIMIT_HMAC_SECRET`
+- Functions: `SUBMISSIONS_ENABLED`
+- Builds: `TURNSTILE_SITE_KEY`
+- Keep `SUBMISSIONS_ENABLED=false` until the migration, Deploy Preview, production deploy, and live 503 checks are complete.
+- Cloudflare official test credentials are allowed only in tests and the Deploy Preview context.
 
 ## 9. GitHub Workflow Rules
 
@@ -96,6 +117,7 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 - Show `git diff` before push or deploy-related approval.
 - Do not push or deploy without showing git status and git diff first.
 - Do not force push.
+- Never merge a security pull request without explicit approval.
 - Use small, understandable commits when possible.
 - Keep the repo copy and any manual deploy folder aligned before release.
 - If deployment is manual, confirm the deploy-ready files match the intended repo state.
@@ -134,8 +156,13 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
   - LAWA follow-through remains available
 - Confirm privacy copy is visible near the logging action.
 - Confirm no name, email, address, login, precise location, or aircraft ID is being collected.
+- Confirm the browser contains no direct `public.reports` insert path.
+- Confirm a fresh Turnstile token is obtained on every normal or retry attempt.
+- Confirm unknown Recent Reports zone values are not rendered.
+- Confirm `/api/*`, `/.netlify/functions/*`, and Supabase requests bypass the service worker.
+- Confirm `SUBMISSIONS_ENABLED=false` before the initial production deploy.
 - Confirm dashboard labels read:
-  - `Today`
+  - `Today's Complaints` as the primary count
   - `This Week`
   - `This Month`
   - `All Time`
@@ -163,10 +190,18 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
 
 ## 13. Rollback Procedure
 
+- Set Netlify `SUBMISSIONS_ENABLED=false` and disable the database circuit breaker first.
 - Identify the last known-good version in Git or the last known-good deploy bundle.
 - Confirm the rollback target before acting.
 - If Git-based rollback is needed, prefer a normal revert commit over history rewriting.
 - Do not force push.
 - If Netlify deployment is manual, prepare the last known-good deploy folder and redeploy that package.
 - After rollback, verify the live site reflects the intended prior version.
+- Roll back the RPC/private tables only after frontend code no longer sends requests to `/api/report`.
+- Never restore direct `anon` or `authenticated` INSERT privileges as a rollback shortcut.
 - Document why the rollback happened and what must be fixed before redeploy.
+
+## 14. Protected Incident Evidence
+
+- Do not query, modify, expose, migrate, copy, or delete `incident.reports_abuse_20260718`.
+- Incident evidence must never be included in builds, deploy artifacts, tests, logs, documentation exports, or screenshots.

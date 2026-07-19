@@ -1,0 +1,9 @@
+{
+  "name": "quiet-skies-gh",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "build": "node scripts/build.mjs"
+  }
+}

@@ -23,8 +23,21 @@ Two permissive `INSERT` policies apply to `anon`:
 
 PostgreSQL combines permissive policies with `OR`. The unrestricted policy therefore makes the validation policy ineffective for columns that `anon` is allowed to insert. This is an existing production authorization risk and is not introduced by the dashboard migration.
 
-## Release Decision
+## 2026-07-13 Dashboard Release Decision
 
-This release does not change RLS enablement or alter, remove, or replace any policy. The migration grants `anon` column-level `INSERT` on `submission_id` only, matching the existing column-grant model. It does not grant `SELECT` on `submission_id` or table-level `INSERT`.
+The 2026-07-13 dashboard release did not change RLS enablement or alter, remove,
+or replace any policy. Its migration granted `anon` column-level `INSERT` on
+`submission_id`, matching the grant model at that time. That grant has since
+been revoked and must not be restored for secure reporting.
 
 Any policy correction requires a separate reviewed release with dedicated insert and regression testing.
+
+## 2026-07-19 Security Architecture Addendum
+
+Production direct `INSERT` privileges for `anon` have since been revoked. The
+secure-reporting migration must fail closed if either `anon` or `authenticated`
+still has table-level or column-level `INSERT` on `public.reports`.
+
+The new browser write path is `POST /api/report` through a Netlify Function and
+the service-role-only `submit_community_report` RPC. The migration does not
+alter existing RLS policies and must never restore anonymous INSERT.
