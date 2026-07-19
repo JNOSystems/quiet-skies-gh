@@ -173,6 +173,19 @@ test('accepts POST application/json only', async () => {
   assert.equal(contentType.payload.code, 'unsupported_media_type');
 });
 
+test('exports the Netlify platform rate limit for POST /api/report', async () => {
+  const module = await getFunctionModule();
+  assert.deepEqual(module.config, {
+    path: '/api/report',
+    method: 'POST',
+    rateLimit: {
+      windowLimit: 12,
+      windowSize: 60,
+      aggregateBy: ['ip', 'domain']
+    }
+  });
+});
+
 test('rejects missing, failed, mismatched, and reused Turnstile tokens', async () => {
   const missing = await invoke(validBody({ turnstileToken: '' }));
   assert.equal(missing.payload.code, 'invalid_turnstile_token');

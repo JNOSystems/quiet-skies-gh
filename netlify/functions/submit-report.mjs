@@ -362,7 +362,13 @@ export function createSubmitReportHandler({
 }
 
 export const config = {
-  path: '/api/report'
+  path: '/api/report',
+  method: 'POST',
+  rateLimit: {
+    windowLimit: 12,
+    windowSize: 60,
+    aggregateBy: ['ip', 'domain']
+  }
 };
 
 export default createSubmitReportHandler();
