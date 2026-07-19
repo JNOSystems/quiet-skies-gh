@@ -62,7 +62,8 @@ Cloudflare's official test credentials may be configured only for the Netlify
 Deploy Preview context:
 
 - Site key: `1x00000000000000000000AA`
-- Secret key: `1x0000000000000000000000000000000AA`
+- Secret key: use Cloudflare's official always-pass test secret from its
+  [Turnstile testing documentation](https://developers.cloudflare.com/turnstile/troubleshooting/testing/)
 
 The function accepts the official test response (`localhost`, action `test`)
 only when the request hostname matches Netlify's Deploy Preview hostname format.
