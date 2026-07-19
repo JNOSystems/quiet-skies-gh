@@ -1,7 +1,9 @@
-const CACHE_NAME = 'quiet-skies-gh-v4-idempotency';
+const CACHE_NAME = 'quiet-skies-gh-v5-secure-reporting';
 const APP_SHELL = [
   '/',
   '/dashboard_periods.js',
+  '/secure_report_client.js',
+  '/runtime-config.js',
   '/manifest.json',
   '/icon.svg'
 ];
@@ -30,13 +32,20 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const requestUrl = new URL(event.request.url);
+  if (
+    requestUrl.pathname.startsWith('/api/') ||
+    requestUrl.pathname.startsWith('/.netlify/functions/') ||
+    requestUrl.hostname.endsWith('.supabase.co')
+  ) return;
   if (requestUrl.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/')))

@@ -11,8 +11,11 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="runtime-config.js"></script>
 <script src="dashboard_periods.js"></script>
+<script src="secure_report_client.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" defer></script>
 <style>
   :root {
     --sky: #050812;
@@ -250,6 +253,12 @@
     border-color: rgba(245,158,11,0.4);
     background: rgba(245,158,11,0.08);
   }
+  .zone-btn:focus-visible,
+  .report-btn:focus-visible,
+  .lawa-banner-dismiss:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+  }
   .zone-btn.active {
     background: linear-gradient(180deg, rgba(245,158,11,0.2), rgba(249,115,22,0.12));
     border-color: var(--zone-active-border);
@@ -309,6 +318,25 @@
     line-height: 1.45;
     text-align: center;
     color: var(--muted);
+  }
+  .turnstile-widget {
+    width: 100%;
+    min-height: 0;
+    margin-top: 10px;
+  }
+  .turnstile-widget:empty {
+    display: none;
+  }
+  .submission-status {
+    min-height: 18px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .submission-status.error {
+    color: #fca5a5;
   }
   .submission-recovery {
     margin-top: 14px;
@@ -506,8 +534,8 @@
     margin-top: 3px;
   }
   .lawa-banner-dismiss {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 8px;
     background: rgba(255,255,255,0.06);
@@ -666,7 +694,7 @@
   /* STATS BAR */
   .stats-bar {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-bottom: 18px;
   }
@@ -821,23 +849,29 @@
       font-size: 12px;
     }
     .live-counter {
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
     }
     .counter-number {
       font-size: 42px;
     }
     .stats-bar {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 12px;
     }
     .stat-card {
-      min-height: 68px;
-      padding: 10px 8px;
+      min-height: 58px;
+      padding: 8px 4px;
+    }
+    .stat-number {
+      font-size: 24px;
+      margin-bottom: 3px;
     }
     .stat-desc {
-      font-size: 11px;
+      font-size: 10px;
+      line-height: 1.2;
+      letter-spacing: 0;
     }
     .monthly-history {
       margin-bottom: 20px;
@@ -850,11 +884,14 @@
       grid-template-columns: 1fr;
     }
     .zone-section {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+    }
+    .zone-label {
+      margin-bottom: 7px;
     }
     .zone-btn {
-      min-height: 68px;
-      padding: 12px 8px 10px;
+      min-height: 60px;
+      padding: 9px 6px 8px;
       font-size: 12px;
     }
     .zone-icon {
@@ -865,19 +902,19 @@
     }
     .report-helper {
       font-size: 11px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .report-btn {
-      border-radius: 18px;
-      padding: 22px 18px;
+      border-radius: 16px;
+      padding: 16px;
     }
     .btn-plane {
-      font-size: 40px;
-      margin-bottom: 4px;
+      font-size: 34px;
+      margin-bottom: 2px;
     }
     .btn-main-text {
-      font-size: 28px;
-      margin-bottom: 4px;
+      font-size: 26px;
+      margin-bottom: 3px;
     }
     .btn-sub-text {
       font-size: 12px;
@@ -936,10 +973,6 @@
     <p class="tagline">Aircraft noise over Granada Hills.<br>Log what you hear. Help build the record.</p>
   </header>
 
-  <a class="top-lawa-link" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
-    File directly with LAWA
-  </a>
-
   <!-- LIVE COUNTER -->
   <div class="live-counter" aria-label="Today's community complaint count">
     <div class="counter-left">
@@ -958,10 +991,6 @@
   <!-- STATS BAR -->
   <div class="stats-bar" aria-label="Community report statistics">
     <div class="stat-card">
-      <div class="stat-number" id="stats-today">0</div>
-      <div class="stat-desc">Today</div>
-    </div>
-    <div class="stat-card">
       <div class="stat-number" id="stats-week">0</div>
       <div class="stat-desc">This Week</div>
     </div>
@@ -974,16 +1003,6 @@
       <div class="stat-desc">All Time</div>
     </div>
   </div>
-
-  <!-- MONTHLY HISTORY -->
-  <section class="monthly-history" aria-labelledby="monthly-history-title">
-    <h2 class="monthly-title" id="monthly-history-title">Complaints by Month</h2>
-    <label class="month-label" for="month-select">Month and year</label>
-    <select class="month-select" id="month-select" aria-describedby="month-summary">
-      <option>Loading months...</option>
-    </select>
-    <p class="month-summary" id="month-summary" aria-live="polite">Loading monthly complaint history...</p>
-  </section>
 
   <!-- ZONE SELECTOR -->
   <div class="zone-section">
@@ -1009,6 +1028,8 @@
       <span class="btn-main-text">I HEARD A PLANE</span>
       <span class="btn-sub-text">Tap to log a community report</span>
     </button>
+    <div class="turnstile-widget" id="turnstile-widget" aria-label="Bot verification"></div>
+    <div class="submission-status" id="submission-status" role="status" aria-live="polite"></div>
     <div class="submission-recovery" id="submission-recovery" role="alert" aria-live="assertive" hidden>
       <p class="submission-recovery-message" id="submission-recovery-message"></p>
       <div class="submission-recovery-actions">
@@ -1016,8 +1037,11 @@
         <button class="submission-action new" id="new-report-btn" type="button" onclick="logNewComplaint()">Log a new complaint</button>
       </div>
     </div>
-    <p class="report-privacy">Private by design: no name, email, address, or login.</p>
+    <p class="report-privacy">Private by design: no name, email, address, or login. Limited technical signals are used for bot and abuse protection and are not stored with the community complaint.</p>
     <p class="report-helper"><strong>Log the community record, then file the official LAWA complaint.</strong></p>
+    <a class="top-lawa-link" href="https://viewpoint.emsbk.com/vny1" target="_blank" rel="noopener">
+      File directly with LAWA
+    </a>
   </div>
 
   <!-- RECENT LOG -->
@@ -1032,6 +1056,16 @@
       </div>
     </div>
   </div>
+
+  <!-- MONTHLY HISTORY -->
+  <section class="monthly-history" aria-labelledby="monthly-history-title">
+    <h2 class="monthly-title" id="monthly-history-title">Complaints by Month</h2>
+    <label class="month-label" for="month-select">Month and year</label>
+    <select class="month-select" id="month-select" aria-describedby="month-summary">
+      <option>Loading months...</option>
+    </select>
+    <p class="month-summary" id="month-summary" aria-live="polite">Loading monthly complaint history...</p>
+  </section>
 
   <!-- LAWA COMPLAINT SECTION -->
   <div class="lawa-section">
@@ -1062,8 +1096,8 @@
     </div>
     <div class="external-link-status" id="external-link-status" role="status" aria-live="polite"></div>
     <p class="privacy-note">
-      Reports save timestamp, selected neighborhood zone, and a random duplicate-prevention code only.<br>
-      No name, email, address, or login is requested.
+      Community complaints store the server timestamp, selected neighborhood zone, and a random duplicate-prevention code only.<br>
+      Limited technical signals are processed separately for bot and abuse protection. No name, email, address, or login is requested.
     </p>
   </footer>
 
@@ -1096,6 +1130,7 @@
   const COOLDOWN_SECONDS = 30;
   const LAST_SUBMISSION_KEY = 'qsgh_last_submission_ts';
   const dashboardPeriods = window.QuietSkiesDashboard;
+  const secureReporting = window.QuietSkiesSecureReporting;
   const TIME_ZONE = dashboardPeriods.DEFAULT_TIME_ZONE;
   const REPORT_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
     timeZone: TIME_ZONE,
@@ -1106,11 +1141,11 @@
   const OFFICIAL_LINKS = {
     VNY_WEBTRAK: 'https://webtrak.emsbk.com/vny4'
   };
-  const VALID_ZONES = [
-    'Granada Hills North',
-    'Granada Hills Central',
-    'Granada Hills South'
-  ];
+  const VALID_ZONES = secureReporting.VALID_ZONES;
+  const TURNSTILE_ACTION = 'quiet-skies-report';
+  const TURNSTILE_SITE_KEY = String(
+    (window.QUIET_SKIES_CONFIG && window.QUIET_SKIES_CONFIG.turnstileSiteKey) || ''
+  );
   const SUBMISSION_STATES = Object.freeze({
     IDLE: 'idle',
     SUBMITTING: 'submitting',
@@ -1130,9 +1165,100 @@
   let submissionState = SUBMISSION_STATES.IDLE;
   let cooldownTimer = null;
   let lawaBannerTimer = null;
+  let turnstileWidgetId = null;
+  let turnstileResolve = null;
+  let turnstileReject = null;
+  let turnstileTimer = null;
 
   function setBadge(text) {
     document.getElementById('log-badge').textContent = text;
+  }
+
+  function setSubmissionStatus(message, isError = false) {
+    const status = document.getElementById('submission-status');
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
+  function clearTurnstileAttempt() {
+    if (turnstileTimer) {
+      clearTimeout(turnstileTimer);
+      turnstileTimer = null;
+    }
+    turnstileResolve = null;
+    turnstileReject = null;
+  }
+
+  function settleTurnstileAttempt(error, token = '') {
+    const resolve = turnstileResolve;
+    const reject = turnstileReject;
+    clearTurnstileAttempt();
+    if (error && reject) reject(error);
+    if (!error && resolve) resolve(token);
+  }
+
+  function turnstileClientError(message) {
+    return new secureReporting.ReportSubmissionError(message, {
+      status: 503,
+      code: 'verification_unavailable',
+      retryable: true
+    });
+  }
+
+  function initializeTurnstile() {
+    if (turnstileWidgetId !== null || !window.turnstile) return;
+    if (!TURNSTILE_SITE_KEY) {
+      setSubmissionStatus('Community reporting protection is not configured.', true);
+      return;
+    }
+
+    turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
+      sitekey: TURNSTILE_SITE_KEY,
+      action: TURNSTILE_ACTION,
+      theme: 'dark',
+      size: 'flexible',
+      appearance: 'interaction-only',
+      execution: 'execute',
+      callback: (token) => settleTurnstileAttempt(null, token),
+      'error-callback': () => settleTurnstileAttempt(
+        turnstileClientError('Bot verification is temporarily unavailable.')
+      ),
+      'expired-callback': () => settleTurnstileAttempt(
+        turnstileClientError('Bot verification expired. Retry this report.')
+      )
+    });
+  }
+
+  window.onTurnstileLoad = initializeTurnstile;
+
+  function resetTurnstileWidget() {
+    if (window.turnstile && turnstileWidgetId !== null) {
+      window.turnstile.reset(turnstileWidgetId);
+    }
+  }
+
+  function requestFreshTurnstileToken() {
+    initializeTurnstile();
+    if (!window.turnstile || turnstileWidgetId === null) {
+      return Promise.reject(turnstileClientError('Bot verification is temporarily unavailable.'));
+    }
+    if (turnstileResolve || turnstileReject) {
+      return Promise.reject(turnstileClientError('Bot verification is already in progress.'));
+    }
+
+    resetTurnstileWidget();
+    setSubmissionStatus('Checking bot and abuse protection...');
+
+    return new Promise((resolve, reject) => {
+      turnstileResolve = resolve;
+      turnstileReject = reject;
+      turnstileTimer = setTimeout(() => {
+        settleTurnstileAttempt(
+          turnstileClientError('Bot verification timed out. Retry this report.')
+        );
+      }, 30000);
+      window.turnstile.execute(turnstileWidgetId);
+    });
   }
 
   function showExternalLinkStatus(message) {
@@ -1350,7 +1476,7 @@
 
       if (recentError) throw recentError;
 
-      reports = recentReports || [];
+      reports = secureReporting.sanitizeRecentReports(recentReports);
       todayCount = reportsToday;
       weeklyCount = reportsThisWeek;
       monthlyCount = reportsThisMonth;
@@ -1368,7 +1494,6 @@
 
   function updateUI() {
     document.getElementById('counter').textContent = todayCount;
-    document.getElementById('stats-today').textContent = todayCount;
     document.getElementById('stats-week').textContent = weeklyCount;
     document.getElementById('stats-month').textContent = monthlyCount;
     document.getElementById('stats-all-time').textContent = allTimeCount;
@@ -1411,7 +1536,7 @@
   }
 
   function formatZoneLabel(value) {
-    return String(value || '').replace('Granada Hills ', '');
+    return secureReporting.getPublicZoneLabel(value) || '';
   }
 
   function selectZone(btn) {
@@ -1430,12 +1555,13 @@
     document.getElementById('new-report-btn').disabled = disabled;
   }
 
-  function showSubmissionRecovery(pendingSubmission) {
+  function showSubmissionRecovery(pendingSubmission, message = '') {
     submissionState = SUBMISSION_STATES.UNRESOLVED;
     const zoneLabel = formatZoneLabel(pendingSubmission.zone);
     document.getElementById('submission-recovery-message').textContent =
-      `We could not confirm the ${zoneLabel} report. Retry that report or log this as a new complaint.`;
+      message || `We could not confirm the ${zoneLabel} report. Retry that report or log this as a new complaint.`;
     document.getElementById('submission-recovery').hidden = false;
+    setSubmissionStatus(message, Boolean(message));
     setRecoveryActionsDisabled(false);
     updateCooldownButton();
   }
@@ -1461,6 +1587,8 @@
   function completeSubmission(pendingSubmission) {
     dashboardPeriods.clearPendingSubmission(sessionStorage, pendingSubmission.id);
     hideSubmissionRecovery();
+    setSubmissionStatus('');
+    resetTurnstileWidget();
     startCooldown();
     loadData().catch((loadError) => {
       console.error('Report saved, but refresh failed:', loadError);
@@ -1481,26 +1609,31 @@
     updateCooldownButton();
 
     try {
-      const { error } = await supabaseClient
-        .from(reportsTable)
-        .insert({
-          zone: pendingSubmission.zone,
-          reported_at: pendingSubmission.reportedAt,
-          submission_id: pendingSubmission.id
-        });
-
-      if (error && !dashboardPeriods.isDuplicateSubmissionError(error)) throw error;
+      const turnstileToken = await requestFreshTurnstileToken();
+      await secureReporting.submitReport({
+        zone: pendingSubmission.zone,
+        submissionId: pendingSubmission.id,
+        turnstileToken
+      });
       completeSubmission(pendingSubmission);
     } catch (error) {
       console.error('Could not save report:', error);
-      if (dashboardPeriods.isAmbiguousNetworkError(error)) {
+      if (error instanceof secureReporting.ReportSubmissionError && error.retryable) {
+        showSubmissionRecovery(pendingSubmission, error.message);
+      } else if (secureReporting.isAmbiguousSubmissionError(error)) {
         showSubmissionRecovery(pendingSubmission);
       } else {
         dashboardPeriods.clearPendingSubmission(sessionStorage, pendingSubmission.id);
         hideSubmissionRecovery();
-        alert('Sorry, the shared report was not accepted. Please try again.');
+        setSubmissionStatus(
+          error && error.message
+            ? error.message
+            : 'The shared report was not accepted. Please try again.',
+          true
+        );
       }
     } finally {
+      resetTurnstileWidget();
       if (submissionState === SUBMISSION_STATES.SUBMITTING) {
         submissionState = SUBMISSION_STATES.IDLE;
       }
@@ -1567,6 +1700,7 @@
 
   // Init
   configureOfficialLinks();
+  initializeTurnstile();
   document.getElementById('month-select').addEventListener('change', handleMonthChange);
   restorePendingSubmission();
   loadData();

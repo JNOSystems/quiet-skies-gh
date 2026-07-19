@@ -1,0 +1,9 @@
+{
+  "name": "quiet-skies-gh",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/dashboard_periods.test.js && node tests/secure_report_submission.test.js",
+    "build": "node scripts/build.mjs"
+  }
+}

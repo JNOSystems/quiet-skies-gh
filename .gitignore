@@ -1,0 +1,7 @@
+/dist/
+/netlify-deploy/
+/quiet-skies-netlify-deploy/
+/quiet-skies-netlify-deploy*.zip
+/.netlify/
+.env*
+!.env.example
