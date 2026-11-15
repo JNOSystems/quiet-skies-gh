@@ -90,6 +90,7 @@ This file defines the operating rules, privacy rules, deployment workflow, QA ch
   - `index.html`
   - `dashboard_periods.js`
   - `secure_report_client.js`
+  - `aircraft_dashboard.js`
   - `runtime-config.js`
   - `manifest.json`
   - `sw.js`

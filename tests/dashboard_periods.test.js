@@ -277,7 +277,7 @@ test('inline application script parses and service worker caches its local depen
   assert.match(html, /requestFreshTurnstileToken/);
 
   const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-  assert.match(serviceWorker, /quiet-skies-gh-v5-secure-reporting/);
+  assert.match(serviceWorker, /quiet-skies-gh-v6-automatic-flights/);
   assert.match(serviceWorker, /\/dashboard_periods\.js/);
   assert.match(serviceWorker, /\/secure_report_client\.js/);
   assert.match(serviceWorker, /\/runtime-config\.js/);
@@ -287,7 +287,7 @@ test('service worker deletes obsolete caches and bypasses API and Supabase reque
   const source = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const listeners = {};
   const deleted = [];
-  const cacheName = 'quiet-skies-gh-v5-secure-reporting';
+  const cacheName = 'quiet-skies-gh-v6-automatic-flights';
   const context = {
     URL,
     fetch: async () => ({ clone: () => ({}) }),
