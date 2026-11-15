@@ -1,8 +1,9 @@
-const CACHE_NAME = 'quiet-skies-gh-v5-secure-reporting';
+const CACHE_NAME = 'quiet-skies-gh-v6-automatic-flights';
 const APP_SHELL = [
   '/',
   '/dashboard_periods.js',
   '/secure_report_client.js',
+  '/aircraft_dashboard.js',
   '/runtime-config.js',
   '/manifest.json',
   '/icon.svg'

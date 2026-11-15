@@ -390,6 +390,7 @@ test('build output contains only allowed browser files and no server secrets', a
       log: () => {}
     });
     assert.deepEqual(outputs, [
+      'aircraft_dashboard.js',
       'dashboard_periods.js',
       'icon.svg',
       'index.html',

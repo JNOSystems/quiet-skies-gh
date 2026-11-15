@@ -14,6 +14,7 @@
 <script src="runtime-config.js"></script>
 <script src="dashboard_periods.js"></script>
 <script src="secure_report_client.js"></script>
+<script src="aircraft_dashboard.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" defer></script>
 <style>
@@ -569,6 +570,32 @@
     background: linear-gradient(90deg, #f59e0b, #f97316);
   }
 
+  /* AUTOMATIC FLIGHTS: separate from community complaints */
+  .aircraft-section {
+    margin-bottom: 28px;
+    padding: 18px 16px;
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    border-radius: 12px;
+    background: rgba(56, 189, 248, 0.045);
+  }
+  .aircraft-section .section-header { gap: 12px; align-items: flex-start; }
+  .aircraft-section .section-title { color: #bae6fd; }
+  .aircraft-section .section-badge { background: rgba(125, 211, 252, 0.1); color: #bae6fd; }
+  .aircraft-note, .aircraft-status, .aircraft-empty {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #9cacc4;
+    overflow-wrap: anywhere;
+  }
+  .aircraft-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+  .aircraft-counts dt { color: var(--text); font-size: 13px; }
+  .aircraft-counts dd { font-family: 'Barlow Condensed', sans-serif; font-size: 38px; font-weight: 800; color: #bae6fd; overflow-wrap: anywhere; }
+  .aircraft-history-title { font-size: 14px; margin: 18px 0 8px; }
+  .aircraft-recent { list-style: none; }
+  .aircraft-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.07); font-size: 12px; line-height: 1.5; }
+  .aircraft-row span { color: #9cacc4; }
+  .aircraft-status { margin-top: 12px; }
+
   /* RECENT LOG */
   .log-section {
     margin-bottom: 28px;
@@ -1044,6 +1071,24 @@
     </a>
   </div>
 
+  <!-- AUTOMATIC FLIGHTS -->
+  <section class="aircraft-section" id="aircraft-section" aria-labelledby="aircraft-title" aria-busy="true">
+    <div class="section-header">
+      <h2 class="section-title" id="aircraft-title">Automatic Flights Detected</h2>
+      <span class="section-badge" id="aircraft-badge">Loading</span>
+    </div>
+    <p class="aircraft-note">Aircraft detections are separate from community complaints. A detection does not measure noise or file a complaint.</p>
+    <dl class="aircraft-counts">
+      <div><dt>Today (Pacific time)</dt><dd id="aircraft-today">—</dd></div>
+      <div><dt>All time</dt><dd id="aircraft-all-time">—</dd></div>
+    </dl>
+    <p class="aircraft-note" id="aircraft-coverage">Loading monitoring coverage…</p>
+    <h3 class="aircraft-history-title">Recent-flight history</h3>
+    <ul class="aircraft-recent" id="aircraft-recent"><li class="aircraft-empty">Loading recent flights…</li></ul>
+    <p class="aircraft-status" id="aircraft-status" role="status" aria-live="polite">Loading flight data…</p>
+    <p class="aircraft-note">Source: FlyItalyADSB. Latest 8 detections. Refreshes every 30 seconds while this page is visible. Coverage may be incomplete; summary updates do not confirm the aircraft feed is online.</p>
+  </section>
+
   <!-- RECENT LOG -->
   <div class="log-section">
     <div class="section-header">
@@ -1103,6 +1148,10 @@
 
 </div>
 
+<script>
+  // Independent startup: a complaint dashboard failure must not block flight data.
+  QuietSkiesAircraft.mount({ document });
+</script>
 <script>
   // Generate stars
   const starsEl = document.getElementById('stars');

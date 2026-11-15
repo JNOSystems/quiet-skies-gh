@@ -15,6 +15,7 @@ const files = [
   { source: 'quiet_skies_granada_hills.html', output: 'index.html' },
   { source: 'dashboard_periods.js', output: 'dashboard_periods.js' },
   { source: 'secure_report_client.js', output: 'secure_report_client.js' },
+  { source: 'aircraft_dashboard.js', output: 'aircraft_dashboard.js' },
   { source: 'sw.js', output: 'sw.js' },
   { source: 'manifest.json', output: 'manifest.json' },
   { source: 'icon.svg', output: 'icon.svg' }
@@ -44,6 +45,7 @@ function getTurnstileSiteKey(env) {
 
 function verifyHtmlReferences(html) {
   const requiredReferences = new Map([
+    ['aircraft_dashboard.js', /<script[^>]+src=["']aircraft_dashboard\.js["'][^>]*>/i],
     ['runtime-config.js', /<script[^>]+src=["']runtime-config\.js["'][^>]*>/i],
     ['dashboard_periods.js', /<script[^>]+src=["']dashboard_periods\.js["'][^>]*>/i],
     ['secure_report_client.js', /<script[^>]+src=["']secure_report_client\.js["'][^>]*>/i],

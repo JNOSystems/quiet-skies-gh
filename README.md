@@ -104,6 +104,7 @@ npm run build
 The build recreates `dist/` with exactly:
 
 ```text
+aircraft_dashboard.js
 dashboard_periods.js
 icon.svg
 index.html
